@@ -28,6 +28,14 @@ import {
 } from './features/pages';
 import { useAuthStore } from './stores/authStore';
 
+function RootRoute() {
+  const { isAuthenticated } = useAuthStore();
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return <LandingPage />;
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   if (!isAuthenticated) {
@@ -40,41 +48,43 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Root Route: Landing Page when logged out, Dashboard when logged in */}
+        <Route path="/" element={<RootRoute />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/overview" element={<LandingPage />} />
-        <Route path="/landing" element={<Navigate to="/overview" replace />} />
-        <Route path="/about" element={<Navigate to="/overview" replace />} />
+        <Route path="/landing" element={<LandingPage />} />
+        <Route path="/about" element={<LandingPage />} />
 
+        {/* Protected Hospital OS Workspace */}
         <Route
-          path="/"
           element={
             <ProtectedRoute>
               <AppLayout />
             </ProtectedRoute>
           }
         >
-          <Route index element={<Dashboard />} />
-          <Route path="patients" element={<PatientsPage />} />
-          <Route path="patients/:id" element={<PatientDetailPage />} />
-          <Route path="appointments" element={<AppointmentsPage />} />
-          <Route path="reception" element={<ReceptionPage />} />
-          <Route path="doctors" element={<DoctorsPage />} />
-          <Route path="consultations" element={<ConsultationsPage />} />
-          <Route path="diagnostics" element={<DiagnosticsPage />} />
-          <Route path="surgeries" element={<SurgeriesPage />} />
-          <Route path="ot-theatre" element={<OTTheatrePage />} />
-          <Route path="implants" element={<ImplantsPage />} />
-          <Route path="recovery" element={<RecoveryPage />} />
-          <Route path="physiotherapy" element={<PhysiotherapyPage />} />
-          <Route path="follow-ups" element={<FollowUpsPage />} />
-          <Route path="communication" element={<CommunicationPage />} />
-          <Route path="ai-assistant" element={<AIAssistantPage />} />
-          <Route path="reports" element={<ReportsPage />} />
-          <Route path="analytics" element={<AnalyticsPage />} />
-          <Route path="finance" element={<FinancePage />} />
-          <Route path="inventory" element={<InventoryPage />} />
-          <Route path="staff" element={<StaffPage />} />
-          <Route path="settings" element={<SettingsPage />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/patients" element={<PatientsPage />} />
+          <Route path="/patients/:id" element={<PatientDetailPage />} />
+          <Route path="/appointments" element={<AppointmentsPage />} />
+          <Route path="/reception" element={<ReceptionPage />} />
+          <Route path="/doctors" element={<DoctorsPage />} />
+          <Route path="/consultations" element={<ConsultationsPage />} />
+          <Route path="/diagnostics" element={<DiagnosticsPage />} />
+          <Route path="/surgeries" element={<SurgeriesPage />} />
+          <Route path="/ot-theatre" element={<OTTheatrePage />} />
+          <Route path="/implants" element={<ImplantsPage />} />
+          <Route path="/recovery" element={<RecoveryPage />} />
+          <Route path="/physiotherapy" element={<PhysiotherapyPage />} />
+          <Route path="/follow-ups" element={<FollowUpsPage />} />
+          <Route path="/communication" element={<CommunicationPage />} />
+          <Route path="/ai-assistant" element={<AIAssistantPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
+          <Route path="/analytics" element={<AnalyticsPage />} />
+          <Route path="/finance" element={<FinancePage />} />
+          <Route path="/inventory" element={<InventoryPage />} />
+          <Route path="/staff" element={<StaffPage />} />
+          <Route path="/settings" element={<SettingsPage />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

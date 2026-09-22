@@ -18,7 +18,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const navGroups = [
   { group: 'Overview', items: [
-    { key: 'dashboard', label: 'Dashboard', path: '/', icon: 'LayoutDashboard' },
+    { key: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
   ]},
   { group: 'Patient Management', items: [
     { key: 'patients', label: 'Patients', path: '/patients', icon: 'Users' },

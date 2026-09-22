@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -9,7 +9,13 @@ import { useAuthStore } from '../../stores/authStore';
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { validateAndLogin } = useAuthStore();
+  const { validateAndLogin, isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   // Pristine empty state - zero auto-fill, zero auto-login
   const [username, setUsername] = useState('');
@@ -32,7 +38,7 @@ export function LoginPage() {
     setTimeout(() => {
       const result = validateAndLogin(username, password);
       if (result.success) {
-        navigate('/');
+        navigate('/dashboard');
       } else {
         setErrorMessage(
           result.message ||
@@ -75,12 +81,12 @@ export function LoginPage() {
           </div>
 
           <button
-            onClick={() => navigate('/overview')}
+            onClick={() => navigate('/')}
             className="text-xs font-bold text-slate-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-800 transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <ExternalLink className="w-3.5 h-3.5 text-teal-400" />
-            <span className="hidden sm:inline">System Overview & Architecture</span>
-            <span className="sm:hidden">Overview</span>
+            <span className="hidden sm:inline">Hospital Landing Page</span>
+            <span className="sm:hidden">Landing</span>
           </button>
         </div>
       </header>

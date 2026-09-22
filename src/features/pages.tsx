@@ -24,6 +24,7 @@ import { DicomViewerModal, SAMPLE_DICOM_STUDIES } from '../components/ui/DicomVi
 import { INITIAL_OP_TRIAGE_RECORDS, OpTriageData } from '../data/opTriageData';
 import { DoctorPreConsultBrief } from '../components/ui/DoctorPreConsultBrief';
 import { useUIStore } from '../stores/uiStore';
+import { SurgicalCaseload3DChart } from '../components/ui/SurgicalCaseload3DChart';
 
 // ═══════════════════════════════════════════════════
 //  RECEPTION WORKSPACE (FRONT-DESK COMMAND STATION)
@@ -3747,42 +3748,9 @@ export function AnalyticsPage() {
 
       {/* ═══ SURGICAL CASELOAD & PROCEDURE DISTRIBUTION (2 DEEP CHARTS) ═══ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Chart 1: Monthly Surgical Volume by Specialty (7 cols) */}
+        {/* Chart 1: Monthly Surgical Volume by Specialty (7 cols) with 3D Depth */}
         <div className="lg:col-span-7 card p-5 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
-            <div>
-              <h3 className="text-sm font-black text-slate-900">Surgical Caseload Growth by Sub-Specialty</h3>
-              <p className="text-[11px] text-slate-500">Monthly procedural volume across Joint Replacement, Spine, Arthroscopy & Trauma</p>
-            </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-mono font-bold border border-teal-200">
-              80 Cases / Sep 2026 Peak
-            </span>
-          </div>
-
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={orthoSpecialtyData}>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
-                <Tooltip
-                  contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
-                />
-                <Bar dataKey="knee" fill="#0d9488" radius={[4, 4, 0, 0]} name="Total Knee (TKR)" stackId="a" />
-                <Bar dataKey="hip" fill="#0284c7" radius={[4, 4, 0, 0]} name="Total Hip (THR)" stackId="a" />
-                <Bar dataKey="spine" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Spine Surgery" stackId="a" />
-                <Bar dataKey="arthroscopy" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Arthroscopy" stackId="a" />
-                <Bar dataKey="trauma" fill="#f43f5e" radius={[4, 4, 0, 0]} name="Trauma Fixation" stackId="a" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-
-          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-600 pt-2 border-t border-slate-100">
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-teal-600" /> Knee Arthroplasty</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sky-600" /> Hip Replacement</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Spine Decompression</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Sports Arthroscopy</span>
-            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Trauma</span>
-          </div>
+          <SurgicalCaseload3DChart data={orthoSpecialtyData} />
         </div>
 
         {/* Chart 2: Procedural Share Donut (5 cols) */}
@@ -4895,207 +4863,9 @@ export function FinancePage() {
 }
 
 // ═══════════════════════════════════════════════════
-//  INVENTORY
+//  INVENTORY (RE-EXPORTED FROM CLEAN MODULAR COMPONENT)
 // ═══════════════════════════════════════════════════
-export function InventoryPage() {
-  const [items, setItems] = useState([
-    { id: 'inv-1', name: 'Zimmer NexGen CR Femoral Component', cat: 'Joint Implants', stock: 1, min: 3, unit: 'pcs', cost: 185000, supplier: 'Zimmer Biomet India', urgency: 'critical' },
-    { id: 'inv-2', name: 'Stryker Triathlon Tibial Baseplate Sz 4', cat: 'Joint Implants', stock: 2, min: 3, unit: 'pcs', cost: 95000, supplier: 'Stryker India', urgency: 'warning' },
-    { id: 'inv-3', name: 'DePuy Synthes Distal Radius Volar Plate', cat: 'Trauma Fixation', stock: 1, min: 4, unit: 'pcs', cost: 28000, supplier: 'Johnson & Johnson MedTech', urgency: 'critical' },
-    { id: 'inv-4', name: 'Titanium Pedicle Screws 6.5x45mm', cat: 'Spine Hardware', stock: 4, min: 10, unit: 'pcs', cost: 14500, supplier: 'Medtronic Spinal', urgency: 'warning' },
-    { id: 'inv-5', name: 'Arthroscopic Shaver Blades 4.0mm', cat: 'Arthroscopy', stock: 3, min: 8, unit: 'boxes', cost: 18500, supplier: 'Smith & Nephew', urgency: 'warning' },
-    { id: 'inv-6', name: 'Bone Cement with Gentamicin 40g', cat: 'Consumables', stock: 12, min: 6, unit: 'packs', cost: 8500, supplier: 'Heraeus Medical', urgency: 'optimal' },
-    { id: 'inv-7', name: 'Ethicon Vicryl 1-0 Heavy Sutures', cat: 'Consumables', stock: 24, min: 10, unit: 'boxes', cost: 4200, supplier: 'Johnson & Johnson', urgency: 'optimal' },
-    { id: 'inv-8', name: 'Smith & Nephew PEEK Suture Anchors', cat: 'Arthroscopy', stock: 2, min: 5, unit: 'pcs', cost: 22000, supplier: 'Smith & Nephew', urgency: 'warning' },
-  ]);
-  const [selectedCat, setSelectedCat] = useState('All');
-  const [toast, setToast] = useState<string | null>(null);
-
-  const handleRestock = (id: string, name: string) => {
-    setItems(prev => prev.map(item => {
-      if (item.id === id) {
-        return { ...item, stock: item.stock + 5, urgency: 'optimal' };
-      }
-      return item;
-    }));
-    setToast(`⚡ Reorder PO submitted for ${name} (+5 units)!`);
-    setTimeout(() => setToast(null), 3000);
-  };
-
-  const categories = ['All', 'Joint Implants', 'Trauma Fixation', 'Spine Hardware', 'Arthroscopy', 'Consumables'];
-  const filtered = selectedCat === 'All' ? items : items.filter(i => i.cat === selectedCat);
-
-  const criticalCount = items.filter(i => i.urgency === 'critical').length;
-  const warningCount = items.filter(i => i.urgency === 'warning').length;
-  const optimalCount = items.filter(i => i.urgency === 'optimal').length;
-
-  return (
-    <div className="page-container">
-      {toast && (
-        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="fixed top-20 right-6 z-50 bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-lg text-xs font-semibold flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4" />
-          <span>{toast}</span>
-        </motion.div>
-      )}
-
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
-          <div>
-            <h1 className="page-title">Surgical & Implant Inventory</h1>
-            <p className="page-subtitle">Hospital consumable stocks · Prosthetics reorder pipeline · Supplier PO tracker</p>
-          </div>
-          <button className="btn-primary !text-xs !py-2">
-            <Plus className="w-3.5 h-3.5" />
-            <span>Generate Reorder PO</span>
-          </button>
-        </div>
-      </motion.div>
-
-      {/* Gamified Stock Health Radar */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        <div className="card p-4 border-2 border-red-300 bg-gradient-to-br from-red-500/10 via-rose-500/5 to-transparent">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-600"></span>
-              </span>
-              <span className="text-xs font-bold text-red-700 uppercase tracking-wide">🚨 Level 1 · Emergency Low</span>
-            </div>
-            <span className="badge bg-red-600 text-white text-[10px] font-bold">{criticalCount} Items Depleted</span>
-          </div>
-          <p className="text-xs text-gray-600 mb-2">Stock below critical OT emergency buffer (&le; 1 unit).</p>
-          <div className="flex gap-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-red-600 rounded-full w-[25%]" />
-          </div>
-        </div>
-
-        <div className="card p-4 border-2 border-amber-300 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-              <span className="text-xs font-bold text-amber-800 uppercase tracking-wide">⚠️ Level 2 · Buffer Warning</span>
-            </div>
-            <span className="badge bg-amber-500 text-white text-[10px] font-bold">{warningCount} Below Threshold</span>
-          </div>
-          <p className="text-xs text-gray-600 mb-2">Replenish within 48 hours to avoid OT scheduling delays.</p>
-          <div className="flex gap-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-amber-500 rounded-full w-[50%]" />
-          </div>
-        </div>
-
-        <div className="card p-4 border-2 border-emerald-300 bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              <span className="text-xs font-bold text-emerald-800 uppercase tracking-wide">✅ Level 3 · Optimal Reserves</span>
-            </div>
-            <span className="badge bg-emerald-600 text-white text-[10px] font-bold">{optimalCount} In Safe Stock</span>
-          </div>
-          <p className="text-xs text-gray-600 mb-2">Consumables and surgical sutures fully stocked for 30 days.</p>
-          <div className="flex gap-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-emerald-500 rounded-full w-[100%]" />
-          </div>
-        </div>
-      </div>
-
-      {/* Category Filter */}
-      <div className="flex flex-wrap gap-2 mb-4">
-        {categories.map(c => (
-          <button
-            key={c}
-            onClick={() => setSelectedCat(c)}
-            className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-              selectedCat === c ? 'bg-primary-600 text-white shadow-xs' : 'bg-white hover:bg-surface-50 text-gray-600 border border-surface-200'
-            )}
-          >
-            {c}
-          </button>
-        ))}
-      </div>
-
-      {/* Inventory Table */}
-      <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="bg-surface-50 border-b border-surface-200">
-                <th className="table-cell table-header text-left">Item Name</th>
-                <th className="table-cell table-header text-left">Category</th>
-                <th className="table-cell table-header text-left">Stock Level & Meter</th>
-                <th className="table-cell table-header text-right">Unit Price</th>
-                <th className="table-cell table-header text-left hidden md:table-cell">Supplier</th>
-                <th className="table-cell table-header text-center">Quick Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map(item => {
-                const isCrit = item.urgency === 'critical';
-                const isWarn = item.urgency === 'warning';
-                return (
-                  <tr key={item.id} className={cn('table-row transition-colors', isCrit ? 'bg-red-50/40' : isWarn ? 'bg-amber-50/30' : '')}>
-                    <td className="table-cell font-semibold text-xs text-gray-900">
-                      <div className="flex items-center gap-2">
-                        <div className={cn(
-                          'w-6 h-6 rounded-md flex items-center justify-center shrink-0',
-                          isCrit ? 'bg-red-100 text-red-700' : isWarn ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'
-                        )}>
-                          <Package className="w-3 h-3" />
-                        </div>
-                        <span>{item.name}</span>
-                      </div>
-                    </td>
-                    <td className="table-cell text-xs text-gray-500">{item.cat}</td>
-                    <td className="table-cell">
-                      <div className="space-y-1 min-w-[130px]">
-                        <div className="flex justify-between items-center">
-                          <span className={cn(
-                            'text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 shadow-2xs',
-                            isCrit ? 'bg-red-600 text-white animate-pulse' :
-                            isWarn ? 'bg-amber-500 text-white' :
-                            'bg-emerald-100 text-emerald-800'
-                          )}>
-                            {isCrit && '🚨'}
-                            {isWarn && '⚠️'}
-                            {!isCrit && !isWarn && '✅'}
-                            {item.stock} {item.unit}
-                          </span>
-                          <span className="text-[10px] text-gray-400">Min: {item.min}</span>
-                        </div>
-                        <div className="flex gap-1 h-1.5 w-full bg-gray-100 rounded-full overflow-hidden">
-                          <div className={cn('h-full flex-1 rounded-full', item.stock >= 1 ? (isCrit ? 'bg-red-500' : isWarn ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-gray-200')} />
-                          <div className={cn('h-full flex-1 rounded-full', item.stock >= item.min ? (isWarn ? 'bg-amber-500' : 'bg-emerald-500') : 'bg-gray-200')} />
-                          <div className={cn('h-full flex-1 rounded-full', item.stock > item.min ? 'bg-emerald-500' : 'bg-gray-200')} />
-                        </div>
-                      </div>
-                    </td>
-                    <td className="table-cell text-right text-xs font-semibold text-gray-800">{formatCurrency(item.cost)}</td>
-                    <td className="table-cell text-xs text-gray-600 hidden md:table-cell">{item.supplier}</td>
-                    <td className="table-cell text-center">
-                      <button
-                        onClick={() => handleRestock(item.id, item.name)}
-                        className={cn(
-                          'text-xs font-semibold px-2.5 py-1 rounded-lg transition-all shadow-2xs inline-flex items-center gap-1',
-                          isCrit ? 'bg-red-600 hover:bg-red-700 text-white' :
-                          isWarn ? 'bg-amber-600 hover:bg-amber-700 text-white' :
-                          'bg-surface-100 hover:bg-surface-200 text-gray-700'
-                        )}
-                      >
-                        <Zap className="w-3 h-3" />
-                        Reorder +5
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  );
-}
+export { InventoryPage } from './inventory/InventoryPage';
 
 // ═══════════════════════════════════════════════════
 //  STAFF

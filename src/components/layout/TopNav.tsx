@@ -6,6 +6,7 @@ import { BRANCHES } from '../../lib/constants';
 import { getInitials } from '../../lib/formatters';
 import type { UserRole } from '../../types';
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const roleOptions: { role: UserRole; label: string; name: string; icon: React.ComponentType<{ className?: string }>; color: string; badge: string }[] = [
   { role: 'super_admin', label: 'Super Admin', name: 'Admin Rasa', icon: Shield, color: 'text-indigo-600 bg-indigo-50', badge: 'Full Access' },
@@ -19,6 +20,7 @@ const roleOptions: { role: UserRole; label: string; name: string; icon: React.Co
 ];
 
 export function TopNav() {
+  const navigate = useNavigate();
   const { toggleCommandPalette, toggleNotificationPanel, toggleQuickCreate, unreadCount, setSidebarMobileOpen } = useUIStore();
   const { user, currentBranch, setBranch, logout, login } = useAuthStore();
   const [branchOpen, setBranchOpen] = useState(false);
@@ -220,7 +222,7 @@ export function TopNav() {
                 </span>
               </div>
               <button
-                onClick={() => { logout(); setProfileOpen(false); }}
+                onClick={() => { logout(); setProfileOpen(false); navigate('/'); }}
                 className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium"
               >
                 <LogOut className="w-4 h-4" />
