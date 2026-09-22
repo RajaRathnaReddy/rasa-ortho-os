@@ -331,92 +331,247 @@ export function Dashboard() {
       {/* ══════════════════════════════════════════════════════════════════
           PERSPECTIVE 1: SUPER ADMIN ("GOD VIEW")
          ══════════════════════════════════════════════════════════════════ */}
+      {/* ══════════════════════════════════════════════════════════════════
+          PERSPECTIVE 1: SUPER ADMIN ("GOD VIEW")
+         ══════════════════════════════════════════════════════════════════ */}
       {perspective === 'super_admin' && (
         <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
+          {/* Executive Top 8 KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
             {[
-              { label: "Today's Appts", value: stats.todayAppointments, icon: CalendarDays, color: 'text-blue-600 bg-blue-50', trend: '+12%', up: true },
-              { label: 'Waiting Queue', value: stats.waitingPatients, icon: Timer, color: 'text-amber-600 bg-amber-50', trend: '', up: false },
-              { label: 'Doctors Active', value: stats.availableDoctors, icon: Stethoscope, color: 'text-teal-600 bg-teal-50', trend: '', up: true },
-              { label: 'Surgeries Today', value: stats.todaySurgeries, icon: Syringe, color: 'text-purple-600 bg-purple-50', trend: '', up: false },
-              { label: 'Pending Consult', value: stats.pendingConsultations, icon: ClipboardList, color: 'text-indigo-600 bg-indigo-50', trend: '', up: false },
-              { label: 'Follow-Ups Due', value: stats.followUpsDueToday, icon: CalendarCheck, color: 'text-rose-600 bg-rose-50', trend: '', up: false },
-              { label: 'OT Utilization', value: `${stats.otUtilization}%`, icon: Activity, color: 'text-cyan-600 bg-cyan-50', trend: '+5%', up: true },
-              { label: 'Daily Revenue', value: formatCurrency(stats.dailyRevenue), icon: IndianRupee, color: 'text-emerald-600 bg-emerald-50', trend: '+8%', up: true },
+              {
+                label: "Today's Appts",
+                value: stats.todayAppointments,
+                subtext: '18 In-Clinic · 6 Tele',
+                icon: CalendarDays,
+                color: 'text-blue-600 bg-blue-50',
+                borderAccent: 'border-t-blue-500',
+                trend: '+12%',
+                up: true
+              },
+              {
+                label: 'Waiting Queue',
+                value: stats.waitingPatients,
+                subtext: 'Avg wait ~11 mins',
+                icon: Timer,
+                color: 'text-amber-600 bg-amber-50',
+                borderAccent: 'border-t-amber-500',
+                trend: 'In Cabin',
+                up: true
+              },
+              {
+                label: 'Doctors Active',
+                value: stats.availableDoctors,
+                subtext: '3 Cabins Consulting',
+                icon: Stethoscope,
+                color: 'text-teal-600 bg-teal-50',
+                borderAccent: 'border-t-teal-500',
+                trend: '100%',
+                up: true
+              },
+              {
+                label: 'Surgeries Today',
+                value: stats.todaySurgeries,
+                subtext: 'OT 1 & OT 2 Booked',
+                icon: Syringe,
+                color: 'text-purple-600 bg-purple-50',
+                borderAccent: 'border-t-purple-500',
+                trend: 'On Track',
+                up: true
+              },
+              {
+                label: 'Pending Consult',
+                value: stats.pendingConsultations,
+                subtext: 'Triage Dossiers Ready',
+                icon: ClipboardList,
+                color: 'text-indigo-600 bg-indigo-50',
+                borderAccent: 'border-t-indigo-500',
+                trend: '',
+                up: false
+              },
+              {
+                label: 'Follow-Ups Due',
+                value: stats.followUpsDueToday,
+                subtext: '3 POD-14 Suture',
+                icon: CalendarCheck,
+                color: 'text-rose-600 bg-rose-50',
+                borderAccent: 'border-t-rose-500',
+                trend: 'Alert',
+                up: false
+              },
+              {
+                label: 'OT Utilization',
+                value: `${stats.otUtilization}%`,
+                subtext: 'Turnaround: 18m',
+                icon: Activity,
+                color: 'text-cyan-600 bg-cyan-50',
+                borderAccent: 'border-t-cyan-500',
+                trend: '+5%',
+                up: true
+              },
+              {
+                label: 'Daily Revenue',
+                value: formatCurrency(stats.dailyRevenue),
+                subtext: '92% Digital UPI/TPA',
+                icon: IndianRupee,
+                color: 'text-emerald-600 bg-emerald-50',
+                borderAccent: 'border-t-emerald-500',
+                trend: '+8%',
+                up: true
+              },
             ].map((kpi) => (
-              <motion.div key={kpi.label} variants={item} className="card p-3.5 hover:border-primary-200 transition-colors">
+              <motion.div
+                key={kpi.label}
+                variants={item}
+                className={cn(
+                  'card p-3.5 border-t-2 bg-white hover:shadow-md transition-all relative group',
+                  kpi.borderAccent
+                )}
+              >
                 <div className="flex items-center justify-between mb-2">
-                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center', kpi.color)}>
+                  <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs', kpi.color)}>
                     <kpi.icon className="w-4 h-4" />
                   </div>
                   {kpi.trend && (
-                    <span className={cn('flex items-center gap-0.5 text-[10px] font-semibold', kpi.up ? 'text-emerald-600' : 'text-red-500')}>
-                      {kpi.up ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
+                    <span className={cn(
+                      'flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full',
+                      kpi.up ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
+                    )}>
+                      {kpi.trend.includes('%') && (kpi.up ? <ArrowUpRight className="w-2.5 h-2.5" /> : <ArrowDownRight className="w-2.5 h-2.5" />)}
                       {kpi.trend}
                     </span>
                   )}
                 </div>
-                <p className="text-lg font-bold text-gray-900 leading-tight">{kpi.value}</p>
-                <p className="text-[10px] text-gray-400 font-medium mt-0.5">{kpi.label}</p>
+                <p className="text-xl font-extrabold text-slate-900 leading-tight tracking-tight">{kpi.value}</p>
+                <p className="text-[11px] font-bold text-slate-700 mt-0.5 truncate">{kpi.label}</p>
+                <p className="text-[9.5px] text-slate-400 font-medium truncate mt-0.5">{kpi.subtext}</p>
               </motion.div>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-            <motion.div variants={item} className="card lg:col-span-2">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-surface-100">
-                <div className="flex items-center gap-2">
-                  <CalendarDays className="w-4 h-4 text-primary-500" />
-                  <h3 className="text-sm font-semibold text-gray-900">Hospital-Wide Patient Flow Today</h3>
-                  <span className="badge bg-primary-50 text-primary-700">{todayAppointments.length}</span>
+          {/* Patient Flow Today + Conversion Funnel */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* Hospital-Wide Patient Flow Today */}
+            <motion.div variants={item} className="card lg:col-span-7 xl:col-span-8 border border-surface-200 overflow-hidden shadow-xs bg-white">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between px-5 py-4 border-b border-surface-100 bg-slate-50/70 gap-2">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
+                    <CalendarDays className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Hospital-Wide Patient Flow Today</h3>
+                    <p className="text-[11px] text-slate-500">Live consult queue, specialist assignments and visit states</p>
+                  </div>
                 </div>
-                <button onClick={() => navigate('/appointments')} className="text-xs text-primary-600 font-medium hover:text-primary-700 flex items-center gap-1">
-                  View All <ChevronRight className="w-3 h-3" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <span className="badge bg-teal-100/80 text-teal-800 text-xs font-bold border border-teal-200">
+                    {todayAppointments.length} Active Consults
+                  </span>
+                  <button
+                    onClick={() => navigate('/appointments')}
+                    className="text-xs text-teal-700 font-bold hover:text-teal-900 flex items-center gap-1 cursor-pointer ml-1"
+                  >
+                    View All <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
-              <div className="divide-y divide-surface-100 max-h-80 overflow-y-auto">
+
+              <div className="divide-y divide-surface-100 max-h-[380px] overflow-y-auto">
                 {todayAppointments.map(apt => {
                   const statusCfg = APPOINTMENT_STATUS_CONFIG[apt.status];
+                  const initials = apt.patientName.split(' ').map(n => n[0]).slice(0, 2).join('');
                   return (
-                    <div key={apt.id} className="flex items-center gap-3 px-5 py-3 hover:bg-surface-50 transition-colors cursor-pointer" onClick={() => navigate(`/patients/${apt.patientId}`)}>
-                      <div className="text-center w-12 shrink-0">
-                        <p className="text-xs font-bold text-gray-900">{formatTime(apt.startTime)}</p>
+                    <div
+                      key={apt.id}
+                      className="flex items-center justify-between gap-3 px-5 py-3 hover:bg-slate-50/80 transition-colors cursor-pointer group"
+                      onClick={() => navigate(`/patients/${apt.patientId}`)}
+                    >
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        {/* Time Column */}
+                        <div className="text-center w-16 shrink-0 bg-slate-100/80 border border-slate-200 px-2 py-1 rounded-lg">
+                          <p className="text-xs font-mono font-bold text-slate-800">{formatTime(apt.startTime)}</p>
+                        </div>
+
+                        {/* Patient Avatar & Details */}
+                        <div className="w-8 h-8 rounded-full bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0">
+                          {initials}
+                        </div>
+
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 group-hover:text-teal-700 transition-colors truncate">
+                            {apt.patientName}
+                          </p>
+                          <p className="text-[11px] text-slate-500 truncate font-medium">
+                            <span className="text-teal-700 font-semibold">{apt.doctorName}</span> · {apt.reason}
+                          </p>
+                        </div>
                       </div>
-                      <div className={cn('w-1 h-8 rounded-full', statusCfg.dot)} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{apt.patientName}</p>
-                        <p className="text-xs text-gray-400 truncate">{apt.doctorName} · {apt.reason}</p>
+
+                      {/* Status & Action */}
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className={cn('badge text-[10px] font-bold px-2 py-0.5 border shadow-2xs', statusCfg.color)}>
+                          <span className={cn('w-1.5 h-1.5 rounded-full mr-1.5', statusCfg.dot)} />
+                          {statusCfg.label}
+                        </span>
+                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:text-slate-700 group-hover:translate-x-0.5 transition-all" />
                       </div>
-                      <span className={cn('badge text-[10px]', statusCfg.color)}>{statusCfg.label}</span>
                     </div>
                   );
                 })}
               </div>
             </motion.div>
 
-            <motion.div variants={item} className="card p-5">
-              <h3 className="text-sm font-semibold text-gray-900 mb-1">Orthopedic Patient Funnel</h3>
-              <p className="text-xs text-gray-400 mb-4">Stage-wise conversion from inquiry to recovery</p>
-              <div className="space-y-2.5">
-                {[
-                  { label: 'Leads & Enquiries', value: funnel.enquiry, color: 'bg-blue-500' },
-                  { label: 'Appointments Booked', value: funnel.appointment, color: 'bg-indigo-500' },
-                  { label: 'OPD Consultations', value: funnel.consultation, color: 'bg-purple-500' },
-                  { label: 'Investigations Ordered', value: funnel.investigation, color: 'bg-teal-500' },
-                  { label: 'Treatment Plans', value: funnel.treatment, color: 'bg-amber-500' },
-                  { label: 'Surgeries Performed', value: funnel.surgery, color: 'bg-orange-500' },
-                  { label: 'Fully Recovered', value: funnel.recovery, color: 'bg-emerald-600' },
-                ].map((f) => (
-                  <div key={f.label} className="space-y-1">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-gray-600">{f.label}</span>
-                      <span className="font-bold text-gray-900">{f.value}</span>
-                    </div>
-                    <div className="h-1.5 w-full bg-surface-100 rounded-full overflow-hidden">
-                      <div className={cn('h-full rounded-full', f.color)} style={{ width: `${Math.min(100, (f.value / (funnel.enquiry || 1)) * 100)}%` }} />
-                    </div>
+            {/* Orthopedic Patient Funnel with Conversion Metrics */}
+            <motion.div variants={item} className="card lg:col-span-5 xl:col-span-4 p-5 border border-surface-200 shadow-xs bg-white flex flex-col justify-between">
+              <div>
+                <div className="flex items-start justify-between mb-1">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                      <TrendingUp className="w-4 h-4 text-teal-600" />
+                      Orthopedic Care Funnel
+                    </h3>
+                    <p className="text-[11px] text-slate-500">Stage conversion rate & leakage tracking</p>
                   </div>
-                ))}
+                  <span className="badge bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
+                    ₹24.8L Active Pipeline
+                  </span>
+                </div>
+
+                <div className="space-y-3 mt-4">
+                  {[
+                    { label: 'Leads & Enquiries', value: funnel.enquiry, pct: '100%', grad: 'from-blue-500 to-sky-500', barBg: 'bg-blue-500' },
+                    { label: 'Appointments Booked', value: funnel.appointment, pct: `${Math.round((funnel.appointment / (funnel.enquiry || 1)) * 100)}% Conv`, grad: 'from-indigo-500 to-blue-600', barBg: 'bg-indigo-500' },
+                    { label: 'OPD Consultations', value: funnel.consultation, pct: `${Math.round((funnel.consultation / (funnel.appointment || 1)) * 100)}% Attended`, grad: 'from-purple-500 to-indigo-600', barBg: 'bg-purple-500' },
+                    { label: 'Investigations Ordered', value: funnel.investigation, pct: `${Math.round((funnel.investigation / (funnel.consultation || 1)) * 100)}% Scans`, grad: 'from-teal-500 to-emerald-600', barBg: 'bg-teal-500' },
+                    { label: 'Treatment Plans Formulated', value: funnel.treatment, pct: `${Math.round((funnel.treatment / (funnel.investigation || 1)) * 100)}% Planned`, grad: 'from-amber-500 to-orange-600', barBg: 'bg-amber-500' },
+                    { label: 'Surgeries Performed', value: funnel.surgery, pct: `${Math.round((funnel.surgery / (funnel.treatment || 1)) * 100)}% Operated`, grad: 'from-orange-500 to-rose-600', barBg: 'bg-orange-500' },
+                    { label: 'Fully Recovered (POD-90)', value: funnel.recovery, pct: `${Math.round((funnel.recovery / (funnel.surgery || 1)) * 100)}% Success`, grad: 'from-emerald-500 to-teal-600', barBg: 'bg-emerald-600' },
+                  ].map((f) => {
+                    const widthPct = Math.min(100, Math.round((f.value / (funnel.enquiry || 1)) * 100));
+                    return (
+                      <div key={f.label} className="space-y-1">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="font-semibold text-slate-700 truncate">{f.label}</span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="font-mono text-[10px] text-slate-400 font-medium">{f.pct}</span>
+                            <span className="font-bold text-slate-900 font-mono w-7 text-right">{f.value}</span>
+                          </div>
+                        </div>
+                        <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 border border-slate-200/60">
+                          <div
+                            className={cn('h-full rounded-full transition-all duration-500 bg-gradient-to-r', f.grad)}
+                            style={{ width: `${Math.max(8, widthPct)}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-surface-100 flex items-center justify-between text-[11px] text-slate-500">
+                <span>Mean Care Cycle: <strong>42 Days</strong></span>
+                <span className="text-emerald-700 font-bold">Zero Sepsis / SSI Target Met</span>
               </div>
             </motion.div>
           </div>
