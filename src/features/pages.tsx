@@ -868,27 +868,48 @@ export function ConsultationsPage() {
   const [romValue, setRomValue] = useState(115);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
+  // Goniometer Arc calculation (0 to 140 degrees)
+  const maxAngle = 140;
+  const percentage = Math.min(100, Math.max(0, (romValue / maxAngle) * 100));
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-5">
       {savedSuccess && (
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="fixed top-20 right-6 z-50 bg-emerald-600 text-white px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 text-xs font-semibold">
           <CheckCircle2 className="w-4 h-4" />
-          <span>Clinical consultation notes & e-prescription recorded successfully!</span>
+          <span>Clinical consultation notes & e-prescription finalized and signed!</span>
         </motion.div>
       )}
 
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
           <div>
-            <h1 className="page-title">Orthopedic Consultation & EMR Suite</h1>
-            <p className="page-subtitle">Patient examination · Goniometer Range of Motion · ICD-10 Coding · Digital Prescription</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <h1 className="page-title text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Orthopedic Consultation & EMR Suite</h1>
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full font-bold border border-teal-200 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse" />
+                Active Consultation Dossier
+              </span>
+            </div>
+            <p className="page-subtitle text-xs sm:text-sm text-slate-500">
+              Orthopedic physical examination · Digital Goniometer ROM · ICD-10 Coding · Digital Prescription & Pre-Op Clearance
+            </p>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={() => navigate('/patients')} className="btn-secondary !text-xs !py-2">
-              <Users className="w-3.5 h-3.5" />
+            <button
+              type="button"
+              onClick={() => navigate('/patients')}
+              className="px-3 py-2 rounded-xl bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs border border-slate-200 transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+            >
+              <Users className="w-3.5 h-3.5 text-slate-500" />
               <span>Select Patient</span>
             </button>
-            <button onClick={() => setSavedSuccess(true)} className="btn-primary !text-xs !py-2">
+            <button
+              type="button"
+              onClick={() => setSavedSuccess(true)}
+              className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 cursor-pointer"
+            >
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Finalize & Sign EMR</span>
             </button>
@@ -896,47 +917,86 @@ export function ConsultationsPage() {
         </div>
       </motion.div>
 
-      {/* Patient Banner */}
-      <div className="card p-4 bg-gradient-to-r from-blue-900 to-slate-900 text-white mb-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center text-white font-bold text-lg">
+      {/* Clinical Patient Identity Dossier Banner */}
+      <div className="card p-4 sm:p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
               RS
             </div>
             <div>
-              <h2 className="text-base font-bold">Rajesh Kumar Sharma · 58y / Male</h2>
-              <p className="text-xs text-blue-200">UHID: ORTHO-HYD-2024-001 · Primary Consultant: Dr. Anand Krishnamurthy</p>
-              <div className="flex items-center gap-2 mt-1">
-                <span className="badge bg-red-500/20 text-red-300 text-[10px] border border-red-500/30">⚠️ Allergy: Penicillin</span>
-                <span className="badge bg-amber-500/20 text-amber-300 text-[10px] border border-amber-500/30">Blood: O Positive</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h2 className="text-base font-bold text-slate-900">Rajesh Kumar Sharma</h2>
+                <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                  58 yrs · Male
+                </span>
+                <span className="text-xs font-mono font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200">
+                  UHID: ORTHO-HYD-2024-001
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Primary Consultant: <strong className="text-slate-800 font-semibold">Dr. Anand Krishnamurthy, MS (Ortho), MCh</strong> · Joint Reconstruction OPD
+              </p>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2 py-0.5 rounded-full">
+                  ⚠️ Penicillin Allergy (Severe Exanthema)
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full">
+                  🩸 Blood Group: O Positive
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-purple-800 bg-purple-50 border border-purple-200 px-2 py-0.5 rounded-full">
+                  ❤️ Cardiac Stent (2021) · On Ecosprin
+                </span>
+                <span className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">
+                  BMI: 30.5 (Obese Class I)
+                </span>
               </div>
             </div>
           </div>
-          <button onClick={() => navigate('/patients/pat-1')} className="btn-secondary !bg-white/10 !text-white hover:!bg-white/20 !border-white/20 !text-xs !py-1.5 self-start">
-            View Patient 360 &rarr;
-          </button>
+          <div className="flex items-center gap-2 self-start lg:self-center shrink-0">
+            <button
+              type="button"
+              onClick={() => navigate('/diagnostics')}
+              className="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-xs border border-teal-200 transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs"
+            >
+              <Eye className="w-3.5 h-3.5 text-teal-600" />
+              <span>Open PACS X-Ray</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/patients')}
+              className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-all flex items-center gap-1 cursor-pointer"
+            >
+              <span>Patient 360</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Consultation Sections Grid */}
+      {/* Main Examination & Pathway Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Left Column: Examination & Joint ROM (7 cols) */}
+        {/* Left Column: Physical Exam & Goniometer (7 cols) */}
         <div className="lg:col-span-7 space-y-5">
-          {/* Joint Goniometer Visualizer */}
-          <div className="card p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-surface-100 pb-3">
+          {/* Digital Joint Goniometer Visualizer Card */}
+          <div className="card p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2">
-                <Bone className="w-4 h-4 text-primary-600" />
-                <h3 className="text-sm font-bold text-gray-900">Orthopedic Joint Range of Motion (ROM)</h3>
+                <Bone className="w-4 h-4 text-teal-600" />
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">Digital Joint Goniometer & Range of Motion (ROM)</h3>
+                  <p className="text-[11px] text-slate-400">Clinical measurement of active & passive joint articulation</p>
+                </div>
               </div>
-              <div className="flex gap-1">
+              <div className="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200 self-start">
                 {['Knee', 'Hip', 'Shoulder', 'Spine'].map(j => (
                   <button
                     key={j}
+                    type="button"
                     onClick={() => setSelectedJoint(j)}
                     className={cn(
-                      'px-2.5 py-1 rounded text-xs font-semibold transition-colors',
-                      selectedJoint === j ? 'bg-primary-600 text-white' : 'bg-surface-100 text-gray-600 hover:bg-surface-200'
+                      'px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                      selectedJoint === j ? 'bg-teal-600 text-white shadow-2xs' : 'text-slate-600 hover:text-slate-900'
                     )}
                   >
                     {j}
@@ -945,108 +1005,280 @@ export function ConsultationsPage() {
               </div>
             </div>
 
-            <div className="space-y-3">
-              <div>
-                <div className="flex justify-between text-xs font-semibold mb-1">
-                  <span>{selectedJoint} Flexion Angle:</span>
-                  <span className="text-primary-700 font-bold text-sm">{romValue}° / 135°</span>
+            {/* Visual Goniometer Arc Gauge */}
+            <div className="p-4 bg-slate-50/80 rounded-2xl border border-slate-200/90 flex flex-col sm:flex-row items-center justify-between gap-6">
+              {/* Radial Arc Visualizer */}
+              <div className="relative w-36 h-36 flex items-center justify-center shrink-0">
+                <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 120 120">
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="48"
+                    className="text-slate-200"
+                    strokeWidth="10"
+                    stroke="currentColor"
+                    fill="transparent"
+                  />
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="48"
+                    className="text-teal-600 transition-all duration-300 ease-out"
+                    strokeWidth="10"
+                    strokeDasharray={301.59}
+                    strokeDashoffset={301.59 - (301.59 * percentage) / 100}
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="transparent"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center justify-center text-center">
+                  <span className="text-2xl font-black font-mono text-slate-900 tracking-tight">{romValue}°</span>
+                  <span className="text-[10px] font-bold text-teal-700 uppercase">Flexion</span>
+                  <span className="text-[9px] text-slate-400">Target 135°</span>
                 </div>
+              </div>
+
+              {/* Angle Metrics & Clinical Interpretation */}
+              <div className="flex-1 space-y-3 w-full">
+                <div className="flex justify-between items-center text-xs">
+                  <span className="font-bold text-slate-700">{selectedJoint} Active Flexion Angle:</span>
+                  <span className="font-mono font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                    {romValue}° / 135°
+                  </span>
+                </div>
+
+                {/* Range Slider */}
                 <input
                   type="range"
                   min="0"
                   max="140"
                   value={romValue}
                   onChange={e => setRomValue(Number(e.target.value))}
-                  className="w-full h-2 bg-surface-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                  className="w-full h-2.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-teal-600"
                 />
-                <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-                  <span>0° (Full Extension)</span>
-                  <span>90° (Functional Angle)</span>
-                  <span>135° (Normal Active)</span>
+
+                <div className="flex justify-between text-[10px] text-slate-400 font-medium">
+                  <span>0° (Full Ext)</span>
+                  <span>45° (Mid Arc)</span>
+                  <span>90° (Chair Seating)</span>
+                  <span>135° (Normal)</span>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1 border-t border-slate-200/80 text-[11px]">
+                  <span className="text-slate-500 font-medium">Flexion Deficit:</span>
+                  <span className="font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                    {Math.max(0, 135 - romValue)}° Limitation
+                  </span>
+                  <span className="text-slate-400 text-[10px]">· Loss of deep squatting capability</span>
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3 text-xs">
-                <div className="p-3 bg-surface-50 rounded-xl border border-surface-200">
-                  <span className="text-[10px] text-gray-400 block">Joint Line Tenderness</span>
-                  <span className="font-semibold text-gray-900">Severe Medial Joint Line (+)</span>
-                </div>
-                <div className="p-3 bg-surface-50 rounded-xl border border-surface-200">
-                  <span className="text-[10px] text-gray-400 block">Ligamentous Stability</span>
-                  <span className="font-semibold text-gray-900">Lachman (-), McMurray (+)</span>
-                </div>
+            {/* 4 Orthopedic Physical Examination Test Findings */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Joint Line Palpation</span>
+                <p className="font-bold text-rose-800 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 w-fit">
+                  Medial Joint Line: Severe (+ + +)
+                </p>
+                <p className="text-[10px] text-slate-500">Lateral line tender: Mild (±) · No patellar facet grind</p>
+              </div>
+
+              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Ligamentous Stability</span>
+                <p className="font-bold text-slate-800">
+                  Lachman: <strong className="text-emerald-700">Negative</strong> · McMurray: <strong className="text-rose-700">Positive (+)</strong>
+                </p>
+                <p className="text-[10px] text-slate-500">Anterior drawer stable · Medial meniscus click elicited</p>
+              </div>
+
+              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Coronal Deformity</span>
+                <p className="font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 w-fit">
+                  8° Genu Varum (Bow-legged)
+                </p>
+                <p className="text-[10px] text-slate-500">Fixed flexion contracture: 5° · Compensatory gait noted</p>
+              </div>
+
+              <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-2xs space-y-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Crepitus & Effusion</span>
+                <p className="font-bold text-slate-800">
+                  Coarse Crepitus <strong className="text-rose-700">(Grade III)</strong>
+                </p>
+                <p className="text-[10px] text-slate-500">Suprapatellar pouch effusion: Moderate (Grade 2 fluid tap)</p>
               </div>
             </div>
           </div>
 
-          {/* Clinical Findings & Treatment Plan */}
-          <div className="card p-5 space-y-3">
-            <h3 className="text-sm font-bold text-gray-900">Assessment & Treatment Pathway</h3>
-            <div>
-              <label className="text-xs font-semibold text-gray-700 block mb-1">Confirmed Clinical Diagnosis</label>
-              <input
-                type="text"
-                defaultValue="Primary Osteoarthritis Right Knee (Kellgren-Lawrence Grade IV) with secondary Varus Deformity"
-                className="input-base text-xs font-medium text-gray-900"
-              />
+          {/* Assessment & Surgical Treatment Pathway */}
+          <div className="card p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <ClipboardList className="w-4 h-4 text-teal-600" />
+                Assessment, ICD-10 Coding & Surgical Pathway
+              </h3>
+              <span className="text-[10px] font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                Surgical Candidate
+              </span>
             </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-700 block mb-1">Recommended Surgical Procedure</label>
-              <input
-                type="text"
-                defaultValue="Unilateral Total Knee Replacement (TKR) with Zimmer NexGen Cruciate Retaining (CR) Prosthesis"
-                className="input-base text-xs font-medium text-gray-900"
-              />
+
+            {/* Confirmed Diagnosis */}
+            <div className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Confirmed Clinical Diagnosis</span>
+                <span className="text-[10px] font-mono font-bold text-purple-800 bg-purple-100 px-2 py-0.2 rounded">
+                  ICD-10: M17.11
+                </span>
+              </div>
+              <p className="font-bold text-sm text-slate-900">
+                Primary Osteoarthritis Right Knee (Kellgren-Lawrence Grade IV) with secondary Varus Deformity
+              </p>
+              <p className="text-[11px] text-slate-500">
+                Complete tricompartmental cartilage denudation with subchondral sclerosis and medial osteophytes
+              </p>
+            </div>
+
+            {/* Recommended Procedure & Implant Spec */}
+            <div className="p-3 bg-teal-50/50 rounded-xl border border-teal-200/80 space-y-1">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800">Recommended Surgical Pathway</span>
+                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.2 rounded">
+                  Elective · Within 14 Days
+                </span>
+              </div>
+              <p className="font-bold text-sm text-teal-950">
+                Right Total Knee Arthroplasty (TKR) with Zimmer NexGen® Cruciate Retaining (CR) Prosthesis
+              </p>
+              <div className="flex items-center gap-3 pt-1 text-[11px] text-teal-800">
+                <span>Approach: <strong>Medial Parapatellar</strong></span>
+                <span>Femur: <strong>Size 4 CR</strong></span>
+                <span>Tibia: <strong>10mm Insert</strong></span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Right Column: E-Prescription & Diagnostics Orders (5 cols) */}
         <div className="lg:col-span-5 space-y-5">
-          {/* E-Prescriptions */}
-          <div className="card p-5 space-y-3">
-            <div className="flex items-center justify-between border-b border-surface-100 pb-2">
-              <h3 className="text-sm font-bold text-gray-900 flex items-center gap-1.5">
+          {/* Active E-Prescriptions Module */}
+          <div className="card p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3.5">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div className="flex items-center gap-2">
                 <FileText className="w-4 h-4 text-emerald-600" />
-                Active E-Prescriptions (Rx)
-              </h3>
-              <button className="text-xs text-primary-600 font-semibold hover:underline">+ Add Medicine</button>
+                <h3 className="text-sm font-bold text-slate-900">Digital E-Prescriptions (Rx)</h3>
+              </div>
+              <button
+                type="button"
+                className="text-xs text-teal-700 hover:text-teal-900 font-bold hover:underline cursor-pointer"
+              >
+                + Add Medicine
+              </button>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {[
-                { drug: 'Tab Aceclofenac 100mg + Paracetamol 325mg', dose: '1-0-1 (After Food)', days: '5 Days', note: 'SOS for acute knee pain' },
-                { drug: 'Cap Pantoprazole 40mg', dose: '1-0-0 (Before Food)', days: '5 Days', note: 'Gastroprotection' },
-                { drug: 'Tab Calcium Carbonate 500mg + Calcitriol', dose: '0-1-0 (After Food)', days: '30 Days', note: 'Bone density support' },
-                { drug: 'Joint Mobility Cryo-Pack Gel', dose: 'TDS Topical', days: '14 Days', note: 'Apply around knee joint' },
+                {
+                  drug: 'Tab. Aceclofenac 100mg + Paracetamol 325mg',
+                  category: 'NSAID / Analgesic',
+                  schedule: '1 - 0 - 1',
+                  timing: 'After Meals',
+                  duration: '5 Days',
+                  note: 'Take SOS for acute knee pain exacerbation'
+                },
+                {
+                  drug: 'Cap. Pantoprazole 40mg',
+                  category: 'Gastroprotective PPI',
+                  schedule: '1 - 0 - 0',
+                  timing: 'Before Breakfast',
+                  duration: '5 Days',
+                  note: 'Empty stomach 30m prior to food'
+                },
+                {
+                  drug: 'Tab. Calcium Carbonate 500mg + Calcitriol',
+                  category: 'Bone Mineral Supplement',
+                  schedule: '0 - 1 - 0',
+                  timing: 'After Lunch',
+                  duration: '30 Days',
+                  note: 'Bone density support & osteopenia management'
+                },
+                {
+                  drug: 'Joint Mobility Cryo-Pack Gel (Topical)',
+                  category: 'Topical Anti-Inflammatory',
+                  schedule: 'TDS (3x / Day)',
+                  timing: 'External Use',
+                  duration: '14 Days',
+                  note: 'Gently apply around knee joint, do not massage'
+                },
               ].map(rx => (
-                <div key={rx.drug} className="p-3 bg-surface-50 rounded-xl border border-surface-200 text-xs">
-                  <div className="flex justify-between items-start">
-                    <p className="font-bold text-gray-900">{rx.drug}</p>
-                    <span className="text-[10px] text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded font-bold">Rx</span>
+                <div key={rx.drug} className="p-3 rounded-xl bg-slate-50/80 border border-slate-200 text-xs space-y-1.5 transition-all hover:border-slate-300">
+                  <div className="flex justify-between items-start gap-2">
+                    <div>
+                      <p className="font-bold text-slate-900">{rx.drug}</p>
+                      <span className="text-[10px] text-slate-400 font-medium">{rx.category}</span>
+                    </div>
+                    <span className="text-[10px] text-teal-800 bg-teal-50 border border-teal-200 px-1.5 py-0.5 rounded font-bold shrink-0">
+                      Rx
+                    </span>
                   </div>
-                  <p className="text-[11px] text-gray-600 mt-0.5">{rx.dose} · {rx.days}</p>
-                  <p className="text-[10px] text-gray-400 italic mt-0.5">{rx.note}</p>
+
+                  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                    <span className="font-mono font-bold text-[11px] text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200">
+                      {rx.schedule}
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-600 bg-white px-1.5 py-0.5 rounded border border-slate-200">
+                      {rx.timing}
+                    </span>
+                    <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                      {rx.duration}
+                    </span>
+                  </div>
+
+                  <p className="text-[10px] text-slate-500 italic pt-0.5">{rx.note}</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Quick Investigation Orders */}
-          <div className="card p-5 space-y-3">
-            <h3 className="text-sm font-bold text-gray-900">Required Pre-Op Investigations</h3>
+          {/* Required Pre-Op Diagnostic Clearances */}
+          <div className="card p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <Microscope className="w-4 h-4 text-teal-600" />
+                Required Pre-Op Investigations
+              </h3>
+              <span className="text-[10px] font-bold text-slate-500">PAC Protocol</span>
+            </div>
+
             <div className="space-y-2">
               {[
-                { test: 'Bilateral Knee Digital X-Ray (AP Standing & Lateral)', dept: 'Radiology', status: 'Completed (Reviewed)' },
-                { test: 'Complete Blood Count (CBC) + ESR + CRP', dept: 'Pathology', status: 'Pending Collection' },
-                { test: 'Pre-Anesthesia Cardiac Clearance (ECG + 2D Echo)', dept: 'Cardiology', status: 'Scheduled 14:00' },
+                {
+                  test: 'Bilateral Knee Digital X-Ray (AP Standing & Lateral)',
+                  dept: 'Radiology / PACS',
+                  status: 'Completed (Reviewed)',
+                  badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                },
+                {
+                  test: 'Complete Blood Count (CBC) + ESR + CRP + Coagulation',
+                  dept: 'Pathology Lab',
+                  status: 'Sample Drawn · Pending',
+                  badgeClass: 'bg-amber-50 text-amber-800 border-amber-200'
+                },
+                {
+                  test: 'Pre-Anesthesia Cardiac Clearance (ECG + 2D Echo)',
+                  dept: 'Cardiology Clinic',
+                  status: 'Scheduled 14:00 Today',
+                  badgeClass: 'bg-blue-50 text-blue-800 border-blue-200'
+                },
               ].map(t => (
-                <div key={t.test} className="p-2.5 bg-surface-50 rounded-xl border border-surface-200 text-xs flex justify-between items-center">
+                <div key={t.test} className="p-3 bg-slate-50/80 rounded-xl border border-slate-200 text-xs flex justify-between items-center gap-2">
                   <div>
-                    <p className="font-medium text-gray-900">{t.test}</p>
-                    <p className="text-[10px] text-gray-400">{t.dept}</p>
+                    <p className="font-bold text-slate-900">{t.test}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">{t.dept}</p>
                   </div>
-                  <span className="badge bg-blue-50 text-blue-700 text-[9px]">{t.status}</span>
+                  <span className={cn('px-2 py-0.5 rounded-full text-[10px] font-bold border whitespace-nowrap shrink-0', t.badgeClass)}>
+                    {t.status}
+                  </span>
                 </div>
               ))}
             </div>
@@ -2556,16 +2788,24 @@ export function StaffPage() {
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
           <div>
-            <h1 className="page-title">Staff & Nursing Ward Station</h1>
-            <p className="page-subtitle">Inpatient bed telemetry · Pre-op surgical clearance checklist · Shift handover</p>
+            <div className="flex items-center gap-2.5 mb-1">
+              <h1 className="page-title text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">Staff & Nursing Ward Station</h1>
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live Ward Telemetry
+              </span>
+            </div>
+            <p className="page-subtitle text-xs sm:text-sm text-slate-500">
+              Continuous inpatient telemetry · Surgical wound & drain monitoring · Pre-op surgical clearance checklist
+            </p>
           </div>
 
-          <div className="flex items-center p-1 bg-white border border-surface-200 rounded-xl shadow-xs self-start">
+          <div className="flex items-center p-1 bg-slate-100 border border-slate-200 rounded-xl shadow-xs self-start gap-1">
             <button
               onClick={() => setActiveTab('ward_beds')}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                activeTab === 'ward_beds' ? 'bg-pink-600 text-white shadow-2xs' : 'text-gray-600 hover:text-gray-900 hover:bg-surface-50'
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                activeTab === 'ward_beds' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               )}
             >
               <BedDouble className="w-3.5 h-3.5" />
@@ -2574,8 +2814,8 @@ export function StaffPage() {
             <button
               onClick={() => setActiveTab('preop_checklist')}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                activeTab === 'preop_checklist' ? 'bg-purple-600 text-white shadow-2xs' : 'text-gray-600 hover:text-gray-900 hover:bg-surface-50'
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                activeTab === 'preop_checklist' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               )}
             >
               <CheckSquare className="w-3.5 h-3.5" />
@@ -2584,8 +2824,8 @@ export function StaffPage() {
             <button
               onClick={() => setActiveTab('shift_handover')}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
-                activeTab === 'shift_handover' ? 'bg-blue-600 text-white shadow-2xs' : 'text-gray-600 hover:text-gray-900 hover:bg-surface-50'
+                'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                activeTab === 'shift_handover' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
               )}
             >
               <Clock className="w-3.5 h-3.5" />
@@ -2597,78 +2837,173 @@ export function StaffPage() {
 
       {/* ═══ TAB 1: INPATIENT TELEMETRY BEDS ═══ */}
       {activeTab === 'ward_beds' && (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-5">
+          {/* High-Level Ward Telemetry Summary Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 shrink-0">
+                <BedDouble className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Admitted Beds</span>
+                <span className="text-sm font-bold text-slate-900">6 / 6 Occupied</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-700 shrink-0">
+                <Activity className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Stable Telemetry</span>
+                <span className="text-sm font-bold text-emerald-700">4 Patients</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-700 shrink-0">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Dressing Review Due</span>
+                <span className="text-sm font-bold text-amber-700">1 Patient (101-B)</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-700 shrink-0">
+                <ShieldAlert className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">ICU Post-Op Care</span>
+                <span className="text-sm font-bold text-rose-700">1 Patient (104-ICU)</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 6 High-Clarity Bed Telemetry Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {beds.map(b => (
               <div
                 key={b.bed}
                 className={cn(
-                  'card p-4.5 border-2 transition-all shadow-xs',
-                  b.status === 'critical' ? 'border-red-300 bg-red-50/20' :
-                  b.status === 'attention' ? 'border-amber-300 bg-amber-50/20' :
-                  b.status === 'ready_discharge' ? 'border-emerald-300 bg-emerald-50/20' :
-                  'border-surface-200 hover:border-primary-300'
+                  'card p-4.5 border transition-all shadow-xs rounded-2xl space-y-3.5',
+                  b.status === 'critical' ? 'border-rose-300 bg-rose-50/15 shadow-sm' :
+                  b.status === 'attention' ? 'border-amber-300 bg-amber-50/15 shadow-sm' :
+                  b.status === 'ready_discharge' ? 'border-blue-300 bg-blue-50/15' :
+                  'border-slate-200 hover:border-teal-300 bg-white'
                 )}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-surface-100 text-gray-800">
-                    {b.bed}
-                  </span>
+                {/* Header: Bed Number & Post-Op Status */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-xs px-2.5 py-1 rounded-md bg-slate-900 text-white tracking-wide shadow-2xs">
+                      {b.bed}
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      {b.age}y · {b.gender === 'M' ? 'Male' : 'Female'}
+                    </span>
+                  </div>
                   <span className={cn(
-                    'badge text-[10px] font-bold',
-                    b.status === 'critical' ? 'bg-red-500 text-white animate-pulse' :
-                    b.status === 'attention' ? 'bg-amber-500 text-white' :
-                    b.status === 'ready_discharge' ? 'bg-emerald-600 text-white' :
-                    'bg-emerald-100 text-emerald-800'
+                    'inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border shadow-2xs',
+                    b.pod === 'POD 0' ? 'bg-rose-100 text-rose-800 border-rose-300 animate-pulse' :
+                    b.pod === 'POD 1' ? 'bg-amber-50 text-amber-800 border-amber-300' :
+                    b.pod === 'POD 2' ? 'bg-emerald-50 text-emerald-800 border-emerald-300' :
+                    'bg-blue-50 text-blue-800 border-blue-300'
                   )}>
-                    {b.pod}
+                    <span className={cn('w-1.5 h-1.5 rounded-full', b.pod === 'POD 0' ? 'bg-rose-600 animate-ping' : b.pod === 'POD 1' ? 'bg-amber-500' : b.pod === 'POD 2' ? 'bg-emerald-500' : 'bg-blue-500')} />
+                    {b.pod === 'POD 0' && 'Day 0 · ICU Post-Op'}
+                    {b.pod === 'POD 1' && 'Day 1 · Close Observation'}
+                    {b.pod === 'POD 2' && 'Day 2 · Mobilizing'}
+                    {b.pod === 'POD 3' && 'Day 3 · Discharge Ready'}
                   </span>
                 </div>
 
-                <p className="font-bold text-sm text-gray-900">{b.patient}</p>
-                <p className="text-xs text-primary-700 font-medium mb-3">{b.proc}</p>
+                {/* Patient Identity & Surgical Procedure */}
+                <div>
+                  <h4 className="font-bold text-sm text-slate-900 leading-snug">{b.patient}</h4>
+                  <p className="text-xs font-semibold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200/80 inline-block mt-1">
+                    {b.proc}
+                  </p>
+                </div>
 
-                {/* Telemetry Vitals Grid */}
-                <div className="grid grid-cols-4 gap-1.5 p-2 rounded-xl bg-white border border-surface-200 text-center mb-3">
-                  <div>
-                    <span className="text-[9px] text-gray-400 block font-semibold">BP</span>
-                    <span className="text-xs font-bold text-gray-800">{b.bp}</span>
+                {/* Clinical Patient Monitor Telemetry Box */}
+                <div className="rounded-xl bg-slate-900 text-white p-2.5 shadow-sm">
+                  <div className="flex items-center justify-between pb-1.5 mb-2 border-b border-slate-800 text-[10px] text-slate-400 font-medium">
+                    <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                      <Activity className="w-3 h-3 animate-pulse" /> Live Telemetry Vitals
+                    </span>
+                    <span className="font-mono text-slate-400">Stream Online</span>
                   </div>
-                  <div>
-                    <span className="text-[9px] text-gray-400 block font-semibold">SpO2</span>
-                    <span className="text-xs font-bold text-emerald-600">{b.spo2}</span>
-                  </div>
-                  <div>
-                    <span className="text-[9px] text-gray-400 block font-semibold">HR</span>
-                    <span className="text-xs font-bold text-gray-800">{b.hr}</span>
-                  </div>
-                  <div>
-                    <span className="text-[9px] text-gray-400 block font-semibold">Pain (1-10)</span>
-                    <span className={cn('text-xs font-bold', b.pain >= 5 ? 'text-red-600' : 'text-amber-600')}>{b.pain}/10</span>
+                  <div className="grid grid-cols-4 gap-1.5 text-center">
+                    {/* BP */}
+                    <div className="bg-slate-800/80 rounded-lg p-1.5 border border-slate-700/60">
+                      <span className="text-[9px] text-slate-400 block font-semibold uppercase">BP (mmHg)</span>
+                      <span className="text-xs font-mono font-bold text-white block mt-0.5">{b.bp}</span>
+                      <span className="text-[8.5px] text-slate-400 font-medium block">Systolic/Dia</span>
+                    </div>
+                    {/* SpO2 */}
+                    <div className="bg-slate-800/80 rounded-lg p-1.5 border border-slate-700/60">
+                      <span className="text-[9px] text-slate-400 block font-semibold uppercase">SpO2 (%)</span>
+                      <span className="text-xs font-mono font-bold text-emerald-400 block mt-0.5">{b.spo2}</span>
+                      <span className="text-[8.5px] text-emerald-400/80 font-medium block">Room Air</span>
+                    </div>
+                    {/* HR */}
+                    <div className="bg-slate-800/80 rounded-lg p-1.5 border border-slate-700/60">
+                      <span className="text-[9px] text-slate-400 block font-semibold uppercase">Pulse (BPM)</span>
+                      <span className="text-xs font-mono font-bold text-sky-400 block mt-0.5">{b.hr}</span>
+                      <span className="text-[8.5px] text-slate-400 font-medium block">Regular Sinus</span>
+                    </div>
+                    {/* Pain */}
+                    <div className="bg-slate-800/80 rounded-lg p-1.5 border border-slate-700/60">
+                      <span className="text-[9px] text-slate-400 block font-semibold uppercase">Pain (VAS)</span>
+                      <span className={cn(
+                        'text-xs font-mono font-bold block mt-0.5',
+                        b.pain >= 6 ? 'text-rose-400' : b.pain >= 4 ? 'text-amber-400' : 'text-emerald-400'
+                      )}>
+                        {b.pain}/10
+                      </span>
+                      <span className="text-[8.5px] text-slate-400 font-medium block">
+                        {b.pain >= 6 ? 'Severe' : b.pain >= 4 ? 'Moderate' : 'Mild'}
+                      </span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-1 text-[11px] text-gray-600 mb-3.5">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">IV Line:</span>
-                    <span className="font-medium text-gray-800">{b.iv}</span>
+                {/* Structured Clinical Lines & Wound Care */}
+                <div className="bg-slate-50 border border-slate-200/90 rounded-xl p-2.5 space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium flex items-center gap-1">
+                      <Syringe className="w-3 h-3 text-teal-600" /> IV Infusion:
+                    </span>
+                    <span className="font-bold text-slate-800">{b.iv}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Drain Output:</span>
-                    <span className="font-medium text-gray-800">{b.drain}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium flex items-center gap-1">
+                      <Activity className="w-3 h-3 text-rose-500" /> Surgical Drain:
+                    </span>
+                    <span className="font-bold text-slate-800">{b.drain}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Dressing:</span>
-                    <span className={cn('font-semibold', b.dressing.includes('Due') ? 'text-amber-700' : 'text-emerald-700')}>{b.dressing}</span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium flex items-center gap-1">
+                      <Shield className="w-3 h-3 text-amber-500" /> Surgical Dressing:
+                    </span>
+                    <span className={cn(
+                      'font-bold px-1.5 py-0.2 rounded text-[11px] border',
+                      b.dressing.includes('Due') ? 'bg-amber-100 text-amber-900 border-amber-300' :
+                      b.dressing.includes('Pressure') ? 'bg-rose-50 text-rose-800 border-rose-200' :
+                      'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    )}>
+                      {b.dressing}
+                    </span>
                   </div>
                 </div>
 
+                {/* Clinical Action Button */}
                 <button
+                  type="button"
                   onClick={() => handleUpdateVitals(b.bed, b.patient)}
-                  className="w-full btn-secondary !text-xs !py-1.5 justify-center shadow-2xs"
+                  className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-2xs transition-all cursor-pointer active:scale-98"
                 >
-                  <HeartPulse className="w-3.5 h-3.5 text-pink-600" />
-                  <span>Log Live Vitals Check</span>
+                  <HeartPulse className="w-3.5 h-3.5" />
+                  <span>Record Live Vitals Check</span>
                 </button>
               </div>
             ))}
