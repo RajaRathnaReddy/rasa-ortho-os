@@ -1,7 +1,7 @@
 // All remaining module pages bundled together for efficiency
 // Each will be split into individual files as the module matures
 
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
   Microscope, Activity, Dumbbell, MessageSquare, Bot, FileBarChart,
@@ -11,7 +11,8 @@ import {
   Zap, Brain, Shield, Stethoscope, BedDouble, CheckSquare, FileText,
   Printer, Ticket, UserCheck, RefreshCw, Play, HeartPulse, Bone,
   Eye, Maximize2, ShieldAlert, Flame, ChevronRight, LayoutGrid,
-  Download, Save, Filter, ArrowUpRight, Lock, BellRing, Server, HardDrive, FileSpreadsheet, Check, ExternalLink, ChevronLeft, HelpCircle, Building, X
+  Download, Save, Filter, ArrowUpRight, Lock, BellRing, Server, HardDrive, FileSpreadsheet, Check, ExternalLink, ChevronLeft, HelpCircle, Building, X,
+  ShieldCheck
 } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { mockDiagnostics, mockPhysiotherapy, mockCommunications, mockDoctors, mockOTs, mockSurgeries, mockAuditLogs, mockInvoices, mockImplants } from '../data/mock';
@@ -3672,84 +3673,337 @@ I have cross-referenced the active Hospital EMR, OPD token board, and current in
 }
 
 // ═══════════════════════════════════════════════════
-//  ANALYTICS
 // ═══════════════════════════════════════════════════
-const analyticsData = [
-  { month: 'Apr', patients: 180, surgeries: 12, revenue: 82 },
-  { month: 'May', patients: 210, surgeries: 15, revenue: 91 },
-  { month: 'Jun', patients: 195, surgeries: 18, revenue: 105 },
-  { month: 'Jul', patients: 230, surgeries: 14, revenue: 98 },
-  { month: 'Aug', patients: 250, surgeries: 20, revenue: 112 },
-  { month: 'Sep', patients: 268, surgeries: 22, revenue: 128 },
+//  SPECIALIZED ORTHOPEDIC ANALYTICS INTELLIGENCE COCKPIT
+// ═══════════════════════════════════════════════════
+const orthoSpecialtyData = [
+  { month: 'Apr', knee: 14, hip: 8, spine: 5, arthroscopy: 9, trauma: 6, total: 42, revenueLakh: 88.5, implantMargin: 31.2 },
+  { month: 'May', knee: 18, hip: 9, spine: 6, arthroscopy: 11, trauma: 8, total: 52, revenueLakh: 96.8, implantMargin: 30.8 },
+  { month: 'Jun', knee: 16, hip: 10, spine: 7, arthroscopy: 12, trauma: 9, total: 54, revenueLakh: 104.2, implantMargin: 32.1 },
+  { month: 'Jul', knee: 20, hip: 11, spine: 6, arthroscopy: 14, trauma: 7, total: 58, revenueLakh: 112.5, implantMargin: 29.8 },
+  { month: 'Aug', knee: 24, hip: 12, spine: 8, arthroscopy: 16, trauma: 10, total: 70, revenueLakh: 124.0, implantMargin: 31.5 },
+  { month: 'Sep', knee: 28, hip: 14, spine: 9, arthroscopy: 18, trauma: 11, total: 80, revenueLakh: 138.4, implantMargin: 32.6 },
 ];
 
-const pieData = [
-  { name: 'Consultation', value: 35, color: '#818cf8' },
-  { name: 'Surgery', value: 40, color: '#f59e0b' },
-  { name: 'Diagnostics', value: 10, color: '#10b981' },
-  { name: 'Physiotherapy', value: 8, color: '#ec4899' },
-  { name: 'Others', value: 7, color: '#94a3b8' },
+const jointDistributionData = [
+  { name: 'Total Knee (TKR)', value: 44, cases: 214, color: '#0d9488' },
+  { name: 'Total Hip (THR)', value: 22, cases: 108, color: '#0284c7' },
+  { name: 'Arthroscopy (ACL/Meniscus)', value: 16, cases: 78, color: '#8b5cf6' },
+  { name: 'Spine Decompression & Fusion', value: 12, cases: 58, color: '#f59e0b' },
+  { name: 'Complex Pelvi-Acetabular Trauma', value: 6, cases: 29, color: '#f43f5e' },
+];
+
+const recoveryBenchmarkData = [
+  { day: 'Day 1 Post-Op', targetDeg: 45, actualCohortDeg: 48, painScore: 6.2 },
+  { day: 'Day 3 Discharge', targetDeg: 65, actualCohortDeg: 70, painScore: 4.5 },
+  { day: 'Day 7 Home', targetDeg: 80, actualCohortDeg: 84, painScore: 3.1 },
+  { day: 'Day 14 Suture', targetDeg: 95, actualCohortDeg: 98, painScore: 2.0 },
+  { day: 'Day 30 Review', targetDeg: 110, actualCohortDeg: 114, painScore: 1.2 },
+  { day: 'Day 90 Full ROM', targetDeg: 125, actualCohortDeg: 128, painScore: 0.4 },
+];
+
+const surgeonQualityData = [
+  { doctor: 'Dr. Anand Krishnamurthy', role: 'Joint Arthroplasty Lead', surgeries: 184, ssiRate: '0.00%', romTarget: '96.2%', alos: '2.0 Days', avgOtMins: '62m', csat: '4.95/5' },
+  { doctor: 'Dr. Lakshmi Narayana', role: 'Spine & Trauma Lead', surgeries: 122, ssiRate: '0.00%', romTarget: '93.8%', alos: '2.4 Days', avgOtMins: '82m', csat: '4.91/5' },
+  { doctor: 'Dr. Priya Sharma', role: 'Sports & Arthroscopy', surgeries: 89, ssiRate: '0.00%', romTarget: '97.5%', alos: '1.2 Days', avgOtMins: '46m', csat: '4.93/5' },
+  { doctor: 'Dr. Rajesh Reddy', role: 'Trauma & Reconstruction', surgeries: 92, ssiRate: '0.00%', romTarget: '91.4%', alos: '3.1 Days', avgOtMins: '58m', csat: '4.88/5' },
 ];
 
 export function AnalyticsPage() {
+  const [timeRange, setTimeRange] = useState<'30D' | '90D' | 'YTD'>('90D');
+  const [specialtyFilter, setSpecialtyFilter] = useState<string>('All');
+  const [exportToast, setExportToast] = useState<string | null>(null);
+
+  const handleExportNABH = () => {
+    setExportToast('NABH Clinical Quality & Audit Dossier generated successfully (PDF + CSV)!');
+    setTimeout(() => setExportToast(null), 3500);
+  };
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-6">
+      {/* Toast */}
+      {exportToast && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-20 right-6 z-50 bg-slate-900 text-white border border-teal-500/40 px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold"
+        >
+          <CheckCircle2 className="w-4 h-4 text-teal-400" />
+          <span>{exportToast}</span>
+        </motion.div>
+      )}
+
+      {/* Header & Controls */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="page-header"><h1 className="page-title">Analytics</h1><p className="page-subtitle">Hospital performance metrics and trends</p></div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="page-title">Orthopedic Clinical & Surgical Analytics</h1>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 font-bold border border-teal-200">
+                NABH Quality Benchmarked
+              </span>
+            </div>
+            <p className="page-subtitle">
+              Longitudinal surgical volume · Zero SSI surveillance · Joint ROM recovery curves · Laminar OT efficiency
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            {/* Time Range Filter */}
+            <div className="flex items-center bg-slate-100 rounded-xl p-1 border border-slate-200 shadow-2xs">
+              {(['30D', '90D', 'YTD'] as const).map(range => (
+                <button
+                  key={range}
+                  onClick={() => setTimeRange(range)}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-bold rounded-lg transition-all cursor-pointer',
+                    timeRange === range
+                      ? 'bg-white text-teal-900 shadow-xs border border-slate-200'
+                      : 'text-slate-500 hover:text-slate-800'
+                  )}
+                >
+                  {range === '30D' ? 'Last 30 Days' : range === '90D' ? 'Q3 2026' : 'Year to Date'}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleExportNABH}
+              className="btn-primary !bg-teal-600 hover:!bg-teal-700 !text-white !text-xs !py-2 !px-3.5 shadow-sm flex items-center gap-1.5 font-bold rounded-xl cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export NABH Dossier</span>
+            </button>
+          </div>
+        </div>
       </motion.div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Patient Volume & Surgery Trend</h3>
-          <div className="h-64">
+
+      {/* ═══ 6 CLINICAL & SURGICAL ORTHOPEDIC KPIS ═══ */}
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-3">
+        {[
+          { label: 'Total Joint Surgeries', value: '487 Cases', sub: '+14.2% YoY · 94% Elective', color: 'border-l-teal-600 text-teal-700', icon: Bone },
+          { label: 'Clean SSI Rate', value: '0.00%', sub: 'Target <0.5% (380 TKR/THR)', color: 'border-l-emerald-600 text-emerald-700', icon: ShieldCheck },
+          { label: 'Avg Length of Stay', value: '2.1 Days', sub: '-0.5d vs Nat. Avg 3.8d', color: 'border-l-cyan-600 text-cyan-700', icon: BedDouble },
+          { label: 'POD-14 ROM Target', value: '92.8%', sub: '≥95° flexion achieved', color: 'border-l-violet-600 text-violet-700', icon: Activity },
+          { label: 'Laminar OT Occupancy', value: '91.4%', sub: '21.8m avg suite turnover', color: 'border-l-amber-500 text-amber-700', icon: Clock },
+          { label: 'OPD-to-Surgery Conv.', value: '19.8%', sub: 'Clinic surgical indication', color: 'border-l-indigo-600 text-indigo-700', icon: TrendingUp },
+        ].map((kpi, idx) => (
+          <div key={idx} className={cn('card p-3.5 border-l-4 flex flex-col justify-between', kpi.color)}>
+            <div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">{kpi.label}</span>
+              <p className={cn('text-xl font-black mt-1', kpi.color.split(' ')[1])}>{kpi.value}</p>
+            </div>
+            <p className="text-[10px] text-slate-500 font-medium mt-1.5 pt-1.5 border-t border-slate-100">{kpi.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* ═══ SURGICAL CASELOAD & PROCEDURE DISTRIBUTION (2 DEEP CHARTS) ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Chart 1: Monthly Surgical Volume by Specialty (7 cols) */}
+        <div className="lg:col-span-7 card p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-sm font-black text-slate-900">Surgical Caseload Growth by Sub-Specialty</h3>
+              <p className="text-[11px] text-slate-500">Monthly procedural volume across Joint Replacement, Spine, Arthroscopy & Trauma</p>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-mono font-bold border border-teal-200">
+              80 Cases / Sep 2026 Peak
+            </span>
+          </div>
+
+          <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analyticsData}>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} />
-                <Bar dataKey="patients" fill="#818cf8" radius={[4, 4, 0, 0]} name="Patients" />
-                <Bar dataKey="surgeries" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Surgeries" />
+              <BarChart data={orthoSpecialtyData}>
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <Tooltip
+                  contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12, boxShadow: '0 4px 12px rgba(0,0,0,0.06)' }}
+                />
+                <Bar dataKey="knee" fill="#0d9488" radius={[4, 4, 0, 0]} name="Total Knee (TKR)" stackId="a" />
+                <Bar dataKey="hip" fill="#0284c7" radius={[4, 4, 0, 0]} name="Total Hip (THR)" stackId="a" />
+                <Bar dataKey="spine" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Spine Surgery" stackId="a" />
+                <Bar dataKey="arthroscopy" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Arthroscopy" stackId="a" />
+                <Bar dataKey="trauma" fill="#f43f5e" radius={[4, 4, 0, 0]} name="Trauma Fixation" stackId="a" />
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-600 pt-2 border-t border-slate-100">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-teal-600" /> Knee Arthroplasty</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sky-600" /> Hip Replacement</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> Spine Decompression</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-purple-500" /> Sports Arthroscopy</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-rose-500" /> Trauma</span>
+          </div>
         </div>
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Revenue Distribution</h3>
-          <div className="h-64 flex items-center justify-center">
+
+        {/* Chart 2: Procedural Share Donut (5 cols) */}
+        <div className="lg:col-span-5 card p-5 space-y-4 flex flex-col justify-between">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-black text-slate-900">Joint Caseload Procedure Share</h3>
+            <p className="text-[11px] text-slate-500">Distribution across 487 surgeries conducted in 2026</p>
+          </div>
+
+          <div className="h-56 flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value">
-                  {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                <Pie
+                  data={jointDistributionData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={65}
+                  outerRadius={95}
+                  paddingAngle={3}
+                  dataKey="value"
+                >
+                  {jointDistributionData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div className="flex flex-wrap gap-3 justify-center mt-2">
-            {pieData.map(d => (
-              <span key={d.name} className="flex items-center gap-1.5 text-[10px] text-gray-500">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />{d.name} {d.value}%
-              </span>
+
+          <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
+            {jointDistributionData.map(d => (
+              <div key={d.name} className="flex items-center justify-between text-slate-700 py-0.5">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                  <span className="truncate">{d.name}</span>
+                </span>
+                <span className="font-mono font-bold text-slate-900">{d.cases} cases ({d.value}%)</span>
+              </div>
             ))}
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: 'Patient Volume', value: '268', trend: '+7.2%', up: true },
-          { label: 'No-Show Rate', value: '4.2%', trend: '-1.1%', up: false },
-          { label: 'Follow-Up Compliance', value: '78%', trend: '+3%', up: true },
-          { label: 'OT Utilization', value: '72%', trend: '+5%', up: true },
-        ].map(m => (
-          <div key={m.label} className="card p-4">
-            <p className="stat-label">{m.label}</p>
-            <p className="stat-value mt-1">{m.value}</p>
-            <p className={cn('text-xs font-medium mt-1', m.up ? 'text-emerald-600' : 'text-red-500')}>{m.trend}</p>
+
+      {/* ═══ POST-OP REHABILITATION & SURGICAL QUALITY SECTION ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Chart 3: Post-Op Rehabilitation Recovery Trajectory (6 cols) */}
+        <div className="lg:col-span-6 card p-5 space-y-4">
+          <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-black text-slate-900">Joint ROM Flexion Recovery Curve</h3>
+              <p className="text-[11px] text-slate-500">Cohort progression from Day 1 Post-Op to 90 Days vs NABH Clinical Benchmark</p>
+            </div>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+              +3.2° Above Target
+            </span>
           </div>
-        ))}
+
+          <div className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={recoveryBenchmarkData}>
+                <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#64748b' }} />
+                <YAxis domain={[30, 140]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} unit="°" />
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }} />
+                <Area type="monotone" dataKey="actualCohortDeg" stroke="#0d9488" fill="#ccfbf1" strokeWidth={2.5} name="Actual Cohort ROM (°)" />
+                <Area type="monotone" dataKey="targetDeg" stroke="#94a3b8" fill="#f1f5f9" strokeWidth={1.5} strokeDasharray="3 3" name="Target Benchmark (°)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+            <span>Day 14 Suture Check Milestone:</span>
+            <span className="font-mono font-bold text-teal-800">98° Actual vs 95° Protocol Target (VAS Pain: 2.0/10)</span>
+          </div>
+        </div>
+
+        {/* OT Suite Turnover & Sterility Metrics (6 cols) */}
+        <div className="lg:col-span-6 card p-5 space-y-4 flex flex-col justify-between">
+          <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-black text-slate-900">Laminar Airflow OT Sterility & Turnover</h3>
+              <p className="text-[11px] text-slate-500">Class 100 positive-pressure surgical theaters telemetry</p>
+            </div>
+            <span className="text-[10px] text-emerald-600 font-mono font-bold flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              HEPA FILTERS 99.97%
+            </span>
+          </div>
+
+          <div className="space-y-3">
+            {[
+              { name: 'OT-1 (Arthroplasty Laminar Suite)', cases: 184, turnover: '21.8 mins', ssi: '0.00%', temp: '18.2°C', rh: '48%', lead: 'Dr. Anand K.' },
+              { name: 'OT-2 (Robotic & Spine Navigation Suite)', cases: 162, turnover: '24.2 mins', ssi: '0.00%', temp: '18.0°C', rh: '46%', lead: 'Dr. Lakshmi N.' },
+              { name: 'OT-3 (Daycare Arthroscopy & Trauma)', cases: 141, turnover: '18.5 mins', ssi: '0.00%', temp: '19.1°C', rh: '50%', lead: 'Dr. Priya S.' },
+            ].map((ot, i) => (
+              <div key={i} className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-900">{ot.name}</span>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    SSI: {ot.ssi}
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 gap-2 text-[11px] text-slate-500 pt-1">
+                  <span>Cases: <strong className="text-slate-800 font-mono">{ot.cases}</strong></span>
+                  <span>Turnaround: <strong className="text-teal-800 font-mono">{ot.turnover}</strong></span>
+                  <span>Temp: <strong className="text-slate-800 font-mono">{ot.temp}</strong></span>
+                  <span>Humidity: <strong className="text-slate-800 font-mono">{ot.rh}</strong></span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-100">
+            <span>Sterilization Protocol: Autoclave Class B + H2O2 Vapor</span>
+            <span className="font-bold text-slate-700">Audit Compliance: 100% Passed</span>
+          </div>
+        </div>
+      </div>
+
+      {/* ═══ SURGEON CASELOAD & QUALITY SCOREBOARD ═══ */}
+      <div className="card overflow-hidden border border-slate-200 shadow-xs space-y-0">
+        <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-black text-slate-900">Lead Surgeon Performance & Quality Index</h3>
+            <p className="text-[11px] text-slate-500">Infection surveillance, operative duration, and functional outcome achievement</p>
+          </div>
+          <span className="text-xs font-mono font-bold text-slate-500">Q3 2026 Audit</span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-slate-100/70 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                <th className="py-3 px-4">Surgeon</th>
+                <th className="py-3 px-4">Sub-Specialty</th>
+                <th className="py-3 px-4">Caseload</th>
+                <th className="py-3 px-4">Clean SSI Rate</th>
+                <th className="py-3 px-4">POD-14 ROM Target</th>
+                <th className="py-3 px-4">Avg Stay (ALOS)</th>
+                <th className="py-3 px-4">Avg Surgery Time</th>
+                <th className="py-3 px-4 text-right">Patient CSAT</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {surgeonQualityData.map((s, idx) => (
+                <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-3 px-4 font-bold text-slate-900">{s.doctor}</td>
+                  <td className="py-3 px-4 text-slate-600">{s.role}</td>
+                  <td className="py-3 px-4 font-mono font-bold text-slate-800">{s.surgeries} Cases</td>
+                  <td className="py-3 px-4">
+                    <span className="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                      {s.ssiRate}
+                    </span>
+                  </td>
+                  <td className="py-3 px-4 font-mono font-bold text-teal-700">{s.romTarget}</td>
+                  <td className="py-3 px-4 font-mono text-slate-700">{s.alos}</td>
+                  <td className="py-3 px-4 font-mono text-slate-600">{s.avgOtMins}</td>
+                  <td className="py-3 px-4 text-right font-bold text-amber-700">★ {s.csat}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
+
 
 // ═══════════════════════════════════════════════════
 //  REPORTS
@@ -4193,56 +4447,502 @@ export function ReportsPage() {
 }
 
 // ═══════════════════════════════════════════════════
-//  FINANCE
+//  SPECIALIZED ORTHOPEDIC FINANCIAL INTELLIGENCE & TPA COCKPIT
 // ═══════════════════════════════════════════════════
+const financialMonthlyTrends = [
+  { month: 'Apr', billedLakh: 88.5, collectedLakh: 76.2, tpaPendingLakh: 12.3 },
+  { month: 'May', billedLakh: 96.8, collectedLakh: 84.5, tpaPendingLakh: 12.3 },
+  { month: 'Jun', billedLakh: 104.2, collectedLakh: 91.0, tpaPendingLakh: 13.2 },
+  { month: 'Jul', billedLakh: 112.5, collectedLakh: 98.4, tpaPendingLakh: 14.1 },
+  { month: 'Aug', billedLakh: 124.0, collectedLakh: 108.6, tpaPendingLakh: 15.4 },
+  { month: 'Sep', billedLakh: 138.4, collectedLakh: 122.2, tpaPendingLakh: 16.2 },
+];
+
+const revenueStreamMix = [
+  { name: 'Joint Surgeries & OT Fees', value: 56, color: '#0d9488', amount: '₹1.95 Cr' },
+  { name: 'Implant Prosthetics & Hardware', value: 24, color: '#0284c7', amount: '₹83.6 L' },
+  { name: 'OPD, Radiographs & Labs', value: 11, color: '#f59e0b', amount: '₹38.3 L' },
+  { name: 'Pharmacy & Rehabilitation', value: 9, color: '#8b5cf6', amount: '₹31.3 L' },
+];
+
+const surgicalPackagesMatrix = [
+  {
+    name: 'Unilateral Total Knee Replacement (TKR)',
+    implant: 'Zimmer Biomet NexGen CR',
+    packagePrice: 210000,
+    hardwareCost: 68000,
+    otMedicinesCost: 24000,
+    hospitalMargin: '31.4%',
+    casesBilled: 142,
+    tpaApprovedRate: '98.5%',
+  },
+  {
+    name: 'Bilateral Total Knee Replacement (TKR)',
+    implant: 'DePuy Synthes Attune Fixed',
+    packagePrice: 395000,
+    hardwareCost: 135000,
+    otMedicinesCost: 42000,
+    hospitalMargin: '30.2%',
+    casesBilled: 84,
+    tpaApprovedRate: '96.2%',
+  },
+  {
+    name: 'Total Hip Replacement (THR - Cementless)',
+    implant: 'Stryker Accolade II / Trident',
+    packagePrice: 265000,
+    hardwareCost: 82000,
+    otMedicinesCost: 28000,
+    hospitalMargin: '32.1%',
+    casesBilled: 72,
+    tpaApprovedRate: '97.8%',
+  },
+  {
+    name: 'Arthroscopic ACL Reconstruction + Meniscus',
+    implant: 'Smith & Nephew Endobutton + PEEK',
+    packagePrice: 145000,
+    hardwareCost: 38000,
+    otMedicinesCost: 16000,
+    hospitalMargin: '34.5%',
+    casesBilled: 58,
+    tpaApprovedRate: '99.0%',
+  },
+  {
+    name: 'Lumbar Spine Decompression & Fusion (TLIF)',
+    implant: 'Medtronic Titanium Pedicle Hardware',
+    packagePrice: 285000,
+    hardwareCost: 92000,
+    otMedicinesCost: 32000,
+    hospitalMargin: '29.8%',
+    casesBilled: 46,
+    tpaApprovedRate: '95.4%',
+  },
+];
+
+const enrichedInvoices = [
+  { id: 'inv-1', no: 'INV-2026-0891', patient: 'Rajesh Kumar Sharma', uhid: 'UHID-2026-0142', procedure: 'Bilateral TKR (Attune)', payer: 'Star Health Insurance (TPA)', total: 395000, paid: 395000, balance: 0, status: 'Settled', preAuthNo: 'SH-849102-PA', date: '21 Sep 2026' },
+  { id: 'inv-2', no: 'INV-2026-0892', patient: 'Lakshmi Devi', uhid: 'UHID-2026-0158', procedure: 'Unilateral TKR (NexGen)', payer: 'Medi Assist Healthcare (TPA)', total: 210000, paid: 180000, balance: 30000, status: 'TPA In-Flight', preAuthNo: 'MA-918231-PA', date: '21 Sep 2026' },
+  { id: 'inv-3', no: 'INV-2026-0893', patient: 'Mohammed Irfan', uhid: 'UHID-2026-0189', procedure: 'Shoulder Hemiarthroplasty', payer: 'HDFC ERGO General Ins.', total: 175000, paid: 175000, balance: 0, status: 'Settled', preAuthNo: 'HE-309182-PA', date: '20 Sep 2026' },
+  { id: 'inv-4', no: 'INV-2026-0894', patient: 'Padmavathi Naidu', uhid: 'UHID-2026-0204', procedure: 'Total Hip Replacement (THR)', payer: 'Cash / NEFT Direct Self-Pay', total: 265000, paid: 265000, balance: 0, status: 'Settled', preAuthNo: 'DIRECT-CASH', date: '20 Sep 2026' },
+  { id: 'inv-5', no: 'INV-2026-0895', patient: 'Venkatesh Reddy', uhid: 'UHID-2026-0211', procedure: 'Spine Decompression TLIF', payer: 'State Health Scheme (Aarogyasri)', total: 245000, paid: 200000, balance: 45000, status: 'Govt Query', preAuthNo: 'AS-849201-GOV', date: '19 Sep 2026' },
+  { id: 'inv-6', no: 'INV-2026-0896', patient: 'Annapurna Raju', uhid: 'UHID-2026-0245', procedure: 'Arthroscopic ACL Repair', payer: 'Care Health Insurance', total: 145000, paid: 145000, balance: 0, status: 'Settled', preAuthNo: 'CHI-829104-PA', date: '19 Sep 2026' },
+  { id: 'inv-7', no: 'INV-2026-0897', patient: 'Srinivas Murthy', uhid: 'UHID-2026-0288', procedure: 'Distal Femur ORIF Fixation', payer: 'Cash / Credit Card', total: 115000, paid: 85000, balance: 30000, status: 'Partially Paid', preAuthNo: 'POS-CARD-091', date: '18 Sep 2026' },
+  { id: 'inv-8', no: 'INV-2026-0898', patient: 'Saraswathi Devi', uhid: 'UHID-2026-0312', procedure: 'High Tibial Osteotomy (HTO)', payer: 'Bajaj Allianz General Ins.', total: 135000, paid: 0, balance: 135000, status: 'Pre-Auth Pending', preAuthNo: 'BA-719283-REC', date: '18 Sep 2026' },
+];
+
 export function FinancePage() {
+  const [filterMode, setFilterMode] = useState<'all' | 'tpa' | 'cash' | 'packages'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [financeToast, setFinanceToast] = useState<string | null>(null);
+  const [activeInvoice, setActiveInvoice] = useState<typeof enrichedInvoices[0] | null>(null);
+
+  const handleDownloadAudit = () => {
+    setFinanceToast('Exporting Q3 Comprehensive Hospital Revenue & GST TPA Dossier (Excel + PDF)...');
+    setTimeout(() => setFinanceToast(null), 3500);
+  };
+
+  const filteredInvoices = enrichedInvoices.filter(inv => {
+    const matchFilter =
+      filterMode === 'all' ||
+      (filterMode === 'tpa' && inv.payer.includes('TPA')) ||
+      (filterMode === 'cash' && inv.payer.includes('Cash')) ||
+      filterMode === 'packages';
+    const query = searchQuery.toLowerCase().trim();
+    const matchSearch =
+      !query ||
+      inv.patient.toLowerCase().includes(query) ||
+      inv.no.toLowerCase().includes(query) ||
+      inv.payer.toLowerCase().includes(query) ||
+      inv.procedure.toLowerCase().includes(query);
+    return matchFilter && matchSearch;
+  });
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-6">
+      {/* Toast */}
+      {financeToast && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed top-20 right-6 z-50 bg-slate-900 text-white border border-teal-500/40 px-4 py-2.5 rounded-xl shadow-xl flex items-center gap-2 text-xs font-bold"
+        >
+          <CheckCircle2 className="w-4 h-4 text-teal-400" />
+          <span>{financeToast}</span>
+        </motion.div>
+      )}
+
+      {/* Header & Controls */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="page-header"><h1 className="page-title">Finance</h1><p className="page-subtitle">Revenue, billing, and payment management</p></div>
-      </motion.div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
-        {[
-          { label: 'Monthly Revenue', value: formatCurrency(12850000), color: 'text-emerald-600' },
-          { label: 'Collected', value: formatCurrency(11200000), color: 'text-blue-600' },
-          { label: 'Pending', value: formatCurrency(1650000), color: 'text-amber-600' },
-          { label: 'Overdue', value: formatCurrency(450000), color: 'text-red-600' },
-        ].map(s => (
-          <div key={s.label} className="card p-4">
-            <p className="stat-label">{s.label}</p>
-            <p className={cn('text-xl font-bold mt-1', s.color)}>{s.value}</p>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
+          <div>
+            <div className="flex items-center gap-2.5">
+              <h1 className="page-title">Orthopedic Revenue & TPA Claims Management</h1>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-bold border border-emerald-200">
+                FY 2026-27 Active
+              </span>
+            </div>
+            <p className="page-subtitle">
+              Surgical package realizations · Cashless insurance pre-auth pipeline · Implant margin accounting
+            </p>
           </div>
-        ))}
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <button
+              onClick={handleDownloadAudit}
+              className="btn-primary !bg-teal-600 hover:!bg-teal-700 !text-white !text-xs !py-2 !px-3.5 shadow-sm flex items-center gap-1.5 font-bold rounded-xl cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export Financial Audit</span>
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* ═══ 5 FINANCIAL TELEMETRY CARDS ═══ */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="card p-3.5 border-l-4 border-l-emerald-600 flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Quarterly Gross Revenue</span>
+            <p className="text-xl font-black text-emerald-700 mt-0.5">₹3.48 Cr</p>
+          </div>
+          <span className="text-[10px] text-emerald-600 font-semibold mt-1.5 pt-1.5 border-t border-slate-100">+18.4% YoY Growth</span>
+        </div>
+
+        <div className="card p-3.5 border-l-4 border-l-teal-600 flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Net Collections Realized</span>
+            <p className="text-xl font-black text-teal-800 mt-0.5">₹3.02 Cr</p>
+          </div>
+          <span className="text-[10px] text-teal-700 font-semibold mt-1.5 pt-1.5 border-t border-slate-100">86.7% Realization Yield</span>
+        </div>
+
+        <div className="card p-3.5 border-l-4 border-l-amber-500 flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">TPA Insurance In-Flight</span>
+            <p className="text-xl font-black text-amber-700 mt-0.5">₹34.8 Lakh</p>
+          </div>
+          <span className="text-[10px] text-amber-800 font-semibold mt-1.5 pt-1.5 border-t border-slate-100">31 Claims · 16.8d Cycle</span>
+        </div>
+
+        <div className="card p-3.5 border-l-4 border-l-indigo-600 flex flex-col justify-between">
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Fixed Packages Billed</span>
+            <p className="text-xl font-black text-indigo-700 mt-0.5">₹2.18 Cr</p>
+          </div>
+          <span className="text-[10px] text-indigo-600 font-semibold mt-1.5 pt-1.5 border-t border-slate-100">72.4% of Inpatient Revenue</span>
+        </div>
+
+        <div className="card p-3.5 border-l-4 border-l-cyan-600 flex flex-col justify-between col-span-2 lg:col-span-1">
+          <div>
+            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Implant Margin Yield</span>
+            <p className="text-xl font-black text-slate-900 mt-0.5">₹78.5 Lakh</p>
+          </div>
+          <span className="text-[10px] text-slate-600 font-semibold mt-1.5 pt-1.5 border-t border-slate-100">29.4% Hardware Margin</span>
+        </div>
       </div>
-      <div className="card overflow-hidden">
-        <table className="w-full">
-          <thead><tr className="bg-surface-50 border-b border-surface-200">
-            <th className="table-cell table-header text-left">Invoice</th>
-            <th className="table-cell table-header text-left">Patient</th>
-            <th className="table-cell table-header text-right">Total</th>
-            <th className="table-cell table-header text-right hidden md:table-cell">Paid</th>
-            <th className="table-cell table-header text-right hidden md:table-cell">Balance</th>
-            <th className="table-cell table-header text-left">Status</th>
-          </tr></thead>
-          <tbody>
-            {mockInvoices.map(inv => (
-              <tr key={inv.id} className="table-row">
-                <td className="table-cell font-mono text-xs text-gray-700">{inv.invoiceNumber}</td>
-                <td className="table-cell text-sm font-medium text-gray-900">{inv.patientName}</td>
-                <td className="table-cell text-right text-sm font-medium text-gray-900">{formatCurrency(inv.total)}</td>
-                <td className="table-cell text-right text-xs text-gray-600 hidden md:table-cell">{formatCurrency(inv.paid)}</td>
-                <td className="table-cell text-right text-xs hidden md:table-cell"><span className={cn(inv.balance > 0 ? 'text-red-600 font-medium' : 'text-gray-400')}>{formatCurrency(inv.balance)}</span></td>
-                <td className="table-cell"><span className={cn('badge text-[10px]',
-                  inv.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                  inv.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                  inv.status === 'partial' ? 'bg-amber-100 text-amber-700' :
-                  'bg-blue-100 text-blue-700'
-                )}>{inv.status}</span></td>
-              </tr>
+
+      {/* ═══ REVENUE STREAMS & TPA CLAIMS PIPELINE (2 CHARTS) ═══ */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Monthly Billed vs Collected Trend (7 cols) */}
+        <div className="lg:col-span-7 card p-5 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <h3 className="text-sm font-black text-slate-900">Hospital Billing vs Realized Cash Collections</h3>
+              <p className="text-[11px] text-slate-500">Monthly billing trends in Lakhs (INR) and TPA insurance settlement rate</p>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+              ₹1.38 Cr / Sep 2026 Peak
+            </span>
+          </div>
+
+          <div className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={financialMonthlyTrends}>
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} unit="L" />
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }} />
+                <Bar dataKey="billedLakh" fill="#0d9488" radius={[4, 4, 0, 0]} name="Gross Billed (₹ Lakh)" />
+                <Bar dataKey="collectedLakh" fill="#0284c7" radius={[4, 4, 0, 0]} name="Collected (₹ Lakh)" />
+                <Bar dataKey="tpaPendingLakh" fill="#f59e0b" radius={[4, 4, 0, 0]} name="TPA Claims Pending (₹ Lakh)" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-6 text-[11px] text-slate-600 pt-2 border-t border-slate-100">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-teal-600" /> Gross Billed</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-sky-600" /> Collected & Cleared</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-amber-500" /> TPA Under Clearance</span>
+          </div>
+        </div>
+
+        {/* Revenue Streams Distribution (5 cols) */}
+        <div className="lg:col-span-5 card p-5 space-y-4 flex flex-col justify-between">
+          <div className="border-b border-slate-100 pb-3">
+            <h3 className="text-sm font-black text-slate-900">Hospital Departmental Revenue Mix</h3>
+            <p className="text-[11px] text-slate-500">Distribution of ₹3.48 Cr gross earnings across modules</p>
+          </div>
+
+          <div className="h-56 flex items-center justify-center">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={revenueStreamMix} cx="50%" cy="50%" innerRadius={65} outerRadius={95} paddingAngle={3} dataKey="value">
+                  {revenueStreamMix.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12 }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs">
+            {revenueStreamMix.map(d => (
+              <div key={d.name} className="flex items-center justify-between text-slate-700 py-0.5">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                  <span className="truncate">{d.name}</span>
+                </span>
+                <span className="font-mono font-bold text-slate-900">{d.amount} ({d.value}%)</span>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </div>
+        </div>
       </div>
+
+      {/* ═══ SURGICAL PACKAGE REALIZATION & COST MARGIN MATRIX ═══ */}
+      <div className="card overflow-hidden border border-slate-200 shadow-xs space-y-0">
+        <div className="p-4 border-b border-slate-200 bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div>
+            <h3 className="text-sm font-black text-slate-900">Standard Orthopedic Surgical Package Realizations</h3>
+            <p className="text-[11px] text-slate-500">Fixed rate packages, hardware component acquisition costs, and gross hospital margins</p>
+          </div>
+          <span className="text-xs font-mono font-bold text-teal-800 bg-teal-50 px-2.5 py-1 rounded-lg border border-teal-200">
+            Average Realized Margin: 31.6%
+          </span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-slate-100/70 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                <th className="py-3 px-4">Procedure Package</th>
+                <th className="py-3 px-4">Standard Prosthetic Model</th>
+                <th className="py-3 px-4 text-right">Package Fee</th>
+                <th className="py-3 px-4 text-right">Hardware Cost</th>
+                <th className="py-3 px-4 text-right">OT Meds & Consumables</th>
+                <th className="py-3 px-4 text-right">Net Hospital Margin</th>
+                <th className="py-3 px-4 text-center">Cases Billed</th>
+                <th className="py-3 px-4 text-right">TPA Approval Rate</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {surgicalPackagesMatrix.map((pkg, i) => (
+                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-3.5 px-4 font-bold text-slate-900">{pkg.name}</td>
+                  <td className="py-3.5 px-4 text-slate-600 font-medium">{pkg.implant}</td>
+                  <td className="py-3.5 px-4 text-right font-mono font-bold text-slate-900">{formatCurrency(pkg.packagePrice)}</td>
+                  <td className="py-3.5 px-4 text-right font-mono text-slate-600">{formatCurrency(pkg.hardwareCost)}</td>
+                  <td className="py-3.5 px-4 text-right font-mono text-slate-600">{formatCurrency(pkg.otMedicinesCost)}</td>
+                  <td className="py-3.5 px-4 text-right">
+                    <span className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      {pkg.hospitalMargin}
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 text-center font-mono font-bold text-slate-800">{pkg.casesBilled}</td>
+                  <td className="py-3.5 px-4 text-right font-mono font-bold text-teal-700">{pkg.tpaApprovedRate}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ═══ REAL-TIME PATIENT BILLING & TPA CLAIMS LEDGER ═══ */}
+      <div className="card overflow-hidden border border-slate-200 shadow-xs space-y-3 p-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
+          <div>
+            <h3 className="text-sm font-black text-slate-900">Patient Billing & Insurance Claims Ledger</h3>
+            <p className="text-[11px] text-slate-500">Live invoices, cashless pre-auth tracking, and co-payment clearance</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search patient, invoice, or TPA insurer..."
+                className="text-xs py-1.5 pl-8 pr-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-800 placeholder-slate-400 focus:outline-none focus:border-teal-500 w-64"
+              />
+            </div>
+
+            <div className="flex items-center bg-slate-100 rounded-xl p-0.5 border border-slate-200">
+              {(['all', 'tpa', 'cash'] as const).map(f => (
+                <button
+                  key={f}
+                  onClick={() => setFilterMode(f)}
+                  className={cn(
+                    'px-2.5 py-1 text-xs font-bold rounded-lg transition-all capitalize cursor-pointer',
+                    filterMode === f ? 'bg-white text-slate-900 shadow-xs' : 'text-slate-500 hover:text-slate-800'
+                  )}
+                >
+                  {f === 'all' ? 'All' : f === 'tpa' ? 'TPA Insurers' : 'Cash'}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                <th className="py-2.5 px-3">Invoice No & Date</th>
+                <th className="py-2.5 px-3">Patient & UHID</th>
+                <th className="py-2.5 px-3">Surgical Procedure</th>
+                <th className="py-2.5 px-3">Payer / Insurance Company</th>
+                <th className="py-2.5 px-3 text-right">Total Billed</th>
+                <th className="py-2.5 px-3 text-right">Cleared Amount</th>
+                <th className="py-2.5 px-3 text-right">Balance Due</th>
+                <th className="py-2.5 px-3 text-center">Claim Status</th>
+                <th className="py-2.5 px-3 text-right">Receipt / Tax Bill</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredInvoices.map(inv => (
+                <tr key={inv.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-3 px-3">
+                    <p className="font-mono font-bold text-slate-900">{inv.no}</p>
+                    <p className="text-[10px] text-slate-400">{inv.date}</p>
+                  </td>
+                  <td className="py-3 px-3">
+                    <p className="font-bold text-slate-900">{inv.patient}</p>
+                    <p className="text-[10px] font-mono text-slate-400">{inv.uhid}</p>
+                  </td>
+                  <td className="py-3 px-3 font-medium text-slate-700">{inv.procedure}</td>
+                  <td className="py-3 px-3">
+                    <p className="font-semibold text-slate-800">{inv.payer}</p>
+                    <p className="text-[10px] font-mono text-slate-400">Pre-Auth: {inv.preAuthNo}</p>
+                  </td>
+                  <td className="py-3 px-3 text-right font-mono font-bold text-slate-900">{formatCurrency(inv.total)}</td>
+                  <td className="py-3 px-3 text-right font-mono text-emerald-700 font-semibold">{formatCurrency(inv.paid)}</td>
+                  <td className="py-3 px-3 text-right font-mono">
+                    <span className={cn(inv.balance > 0 ? 'text-rose-600 font-bold' : 'text-slate-400')}>
+                      {formatCurrency(inv.balance)}
+                    </span>
+                  </td>
+                  <td className="py-3 px-3 text-center">
+                    <span
+                      className={cn(
+                        'text-[10px] font-bold px-2 py-0.5 rounded-full border',
+                        inv.status === 'Settled'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : inv.status === 'TPA In-Flight'
+                          ? 'bg-amber-50 text-amber-700 border-amber-200'
+                          : inv.status === 'Pre-Auth Pending'
+                          ? 'bg-sky-50 text-sky-700 border-sky-200'
+                          : 'bg-violet-50 text-violet-700 border-violet-200'
+                      )}
+                    >
+                      {inv.status}
+                    </span>
+                  </td>
+                  <td className="py-3 px-3 text-right">
+                    <button
+                      onClick={() => setActiveInvoice(inv)}
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] border border-slate-200 transition-all cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <FileText className="w-3 h-3 text-teal-600" />
+                      <span>Invoice</span>
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ═══ INTERACTIVE INVOICE MODAL ═══ */}
+      <AnimatePresence>
+        {activeInvoice && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl border border-slate-200 text-left space-y-4"
+            >
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Hospital Tax Invoice & TPA Bill</h3>
+                  <p className="text-xs text-slate-500 font-mono">{activeInvoice.no} · {activeInvoice.date}</p>
+                </div>
+                <button onClick={() => setActiveInvoice(null)} className="text-slate-400 hover:text-slate-600 cursor-pointer">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Patient Name:</span>
+                  <span className="font-bold text-slate-900">{activeInvoice.patient} ({activeInvoice.uhid})</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Surgical Procedure:</span>
+                  <span className="font-bold text-teal-800">{activeInvoice.procedure}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Insurance / Payer:</span>
+                  <span className="font-bold text-slate-800">{activeInvoice.payer}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Pre-Authorization No:</span>
+                  <span className="font-mono text-slate-700">{activeInvoice.preAuthNo}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5 border-t border-slate-100 pt-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Total Billed Package:</span>
+                  <span className="font-mono font-bold text-slate-900">{formatCurrency(activeInvoice.total)}</span>
+                </div>
+                <div className="flex justify-between text-emerald-700">
+                  <span>Insurance Disbursed / Paid:</span>
+                  <span className="font-mono font-bold">{formatCurrency(activeInvoice.paid)}</span>
+                </div>
+                <div className="flex justify-between font-bold border-t border-slate-200 pt-1 text-sm">
+                  <span>Balance Due:</span>
+                  <span className={cn('font-mono', activeInvoice.balance > 0 ? 'text-rose-600' : 'text-slate-400')}>
+                    {formatCurrency(activeInvoice.balance)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setActiveInvoice(null)}
+                  className="py-2 px-4 rounded-xl border border-slate-200 font-bold text-slate-600 hover:bg-slate-50 cursor-pointer text-xs"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFinanceToast(`Printing GST tax receipt for ${activeInvoice.patient}...`);
+                    setActiveInvoice(null);
+                  }}
+                  className="py-2 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold cursor-pointer shadow-xs text-xs flex items-center gap-1.5"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Receipt</span>
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

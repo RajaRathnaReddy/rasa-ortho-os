@@ -367,45 +367,43 @@ export function DoctorsPage() {
                 }}
               />
 
-              {/* Consultation Pad vs Highlighted History Sub-Tabs */}
-              <div className="flex items-center gap-2 p-1 bg-surface-100 rounded-xl border border-surface-200">
+              {/* Consultation Pad vs Longitudinal History Sub-Tabs */}
+              <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200">
                 <button
                   onClick={() => setConsultSubTab('consult')}
                   className={cn(
-                    'flex-1 py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5',
+                    'flex-1 py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer',
                     consultSubTab === 'consult'
-                      ? 'bg-white text-teal-800 shadow-xs border border-surface-200'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-white text-teal-800 shadow-xs border border-slate-200'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   )}
                 >
-                  <FileText className="w-3.5 h-3.5" />
+                  <FileText className="w-3.5 h-3.5 text-teal-600" />
                   <span>Ortho Examination Pad</span>
                 </button>
 
                 <button
                   onClick={() => setConsultSubTab('history')}
                   className={cn(
-                    'flex-1 py-1.5 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5',
+                    'flex-1 py-2 px-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer',
                     consultSubTab === 'history'
-                      ? 'bg-amber-500 text-slate-950 shadow-md font-black'
-                      : !activeTriage.isNewPatient
-                      ? 'bg-amber-100 text-amber-900 border border-amber-300 shadow-[0_0_10px_rgba(245,158,11,0.2)] animate-pulse'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   )}
                 >
-                  <span>📜</span>
+                  <Clock className="w-3.5 h-3.5" />
                   <span>
-                    History {activeTriage.isNewPatient ? '(New)' : `(${activeTriage.pastVisitsCount})`}
+                    Past History {activeTriage.isNewPatient ? '(New)' : `(${activeTriage.pastVisitsCount})`}
                   </span>
                 </button>
 
                 <button
                   onClick={() => setConsultSubTab('billing')}
                   className={cn(
-                    'py-1.5 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5',
+                    'py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer',
                     consultSubTab === 'billing'
-                      ? 'bg-emerald-600 text-white shadow-md font-black'
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'bg-teal-700 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
                   )}
                 >
                   <IndianRupee className="w-3.5 h-3.5" />
