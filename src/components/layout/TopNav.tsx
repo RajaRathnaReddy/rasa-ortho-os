@@ -19,7 +19,7 @@ const roleOptions: { role: UserRole; label: string; name: string; icon: React.Co
 ];
 
 export function TopNav() {
-  const { toggleCommandPalette, toggleNotificationPanel, unreadCount, setSidebarMobileOpen } = useUIStore();
+  const { toggleCommandPalette, toggleNotificationPanel, toggleQuickCreate, unreadCount, setSidebarMobileOpen } = useUIStore();
   const { user, currentBranch, setBranch, logout, login } = useAuthStore();
   const [branchOpen, setBranchOpen] = useState(false);
   const [roleOpen, setRoleOpen] = useState(false);
@@ -90,7 +90,11 @@ export function TopNav() {
       {/* Right: Actions & Role Switcher */}
       <div className="flex items-center gap-1.5 lg:gap-2.5">
         {/* Quick Create */}
-        <button className="btn-primary hidden md:inline-flex !py-1.5 !px-3 !text-xs !rounded-lg shadow-xs">
+        <button
+          onClick={toggleQuickCreate}
+          className="btn-primary hidden md:inline-flex !py-1.5 !px-3 !text-xs !rounded-lg shadow-xs hover:shadow-sm active:scale-95 transition-all"
+          title="Quick Action Hub — Register patient, book consultation, schedule OT"
+        >
           <Plus className="w-3.5 h-3.5" />
           <span>Quick Create</span>
         </button>

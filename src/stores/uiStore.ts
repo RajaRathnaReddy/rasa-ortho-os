@@ -15,6 +15,9 @@ interface UIState {
   toggleNotificationPanel: () => void;
   markNotificationRead: (id: string) => void;
   markAllRead: () => void;
+  quickCreateOpen: boolean;
+  toggleQuickCreate: () => void;
+  setQuickCreateOpen: (open: boolean) => void;
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
@@ -22,12 +25,15 @@ export const useUIStore = create<UIState>((set, get) => ({
   sidebarMobileOpen: false,
   commandPaletteOpen: false,
   notificationPanelOpen: false,
+  quickCreateOpen: false,
   notifications: mockNotifications,
   unreadCount: mockNotifications.filter(n => !n.read).length,
   toggleSidebar: () => set(s => ({ sidebarCollapsed: !s.sidebarCollapsed })),
   setSidebarMobileOpen: (open) => set({ sidebarMobileOpen: open }),
   toggleCommandPalette: () => set(s => ({ commandPaletteOpen: !s.commandPaletteOpen })),
   toggleNotificationPanel: () => set(s => ({ notificationPanelOpen: !s.notificationPanelOpen })),
+  toggleQuickCreate: () => set(s => ({ quickCreateOpen: !s.quickCreateOpen })),
+  setQuickCreateOpen: (open) => set({ quickCreateOpen: open }),
   markNotificationRead: (id) => set(s => {
     const notifications = s.notifications.map(n => n.id === id ? { ...n, read: true } : n);
     return { notifications, unreadCount: notifications.filter(n => !n.read).length };

@@ -10,7 +10,8 @@ import {
   CheckCircle2, AlertCircle, AlertTriangle, Users, Syringe, CalendarDays, Phone,
   Zap, Brain, Shield, Stethoscope, BedDouble, CheckSquare, FileText,
   Printer, Ticket, UserCheck, RefreshCw, Play, HeartPulse, Bone,
-  Eye, Maximize2, ShieldAlert, Flame, ChevronRight, LayoutGrid
+  Eye, Maximize2, ShieldAlert, Flame, ChevronRight, LayoutGrid,
+  Download, Save, Filter, ArrowUpRight, Lock, BellRing, Server, HardDrive, FileSpreadsheet, Check, ExternalLink, ChevronLeft, HelpCircle, Building, X
 } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { mockDiagnostics, mockPhysiotherapy, mockCommunications, mockDoctors, mockOTs, mockSurgeries, mockAuditLogs, mockInvoices, mockImplants } from '../data/mock';
@@ -2445,32 +2446,439 @@ export function AnalyticsPage() {
 //  REPORTS
 // ═══════════════════════════════════════════════════
 export function ReportsPage() {
-  const reports = [
-    { title: 'Monthly Operations Report', desc: 'Patient volume, surgery stats, OT utilization', date: 'Sep 2024', status: 'Ready' },
-    { title: 'Doctor Performance Report', desc: 'Consultation counts, surgery outcomes, patient ratings', date: 'Sep 2024', status: 'Ready' },
-    { title: 'Financial Summary', desc: 'Revenue, collections, outstanding payments', date: 'Sep 2024', status: 'Ready' },
-    { title: 'Follow-Up Compliance Report', desc: 'Compliance rates, missed follow-ups, outcomes', date: 'Sep 2024', status: 'Generating' },
-    { title: 'Implant Usage Report', desc: 'Implant consumption, supplier analysis, cost trends', date: 'Sep 2024', status: 'Ready' },
-    { title: 'Physiotherapy Outcomes', desc: 'Recovery rates, adherence, patient progress', date: 'Sep 2024', status: 'Ready' },
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('Sep 2024');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedReport, setSelectedReport] = useState<{
+    id: string;
+    title: string;
+    category: string;
+    desc: string;
+    date: string;
+    status: 'Ready' | 'Generating';
+    kpis: { label: string; value: string; change: string; positive: boolean }[];
+    tableHeaders: string[];
+    tableRows: (string | number)[][];
+    signoff: string;
+  } | null>(null);
+  const [exportNotice, setExportNotice] = useState<string | null>(null);
+
+  const reportData = [
+    {
+      id: 'RPT-OPS-2024-09',
+      title: 'Monthly Operations & OT Utilization Report',
+      category: 'Clinical & OT',
+      desc: 'Surgical caseload volume, elective vs emergency breakdown, OT occupancy and room turnover intervals',
+      date: 'Sep 2024',
+      status: 'Ready' as const,
+      kpis: [
+        { label: 'Total Surgeries Performed', value: '142 Cases', change: '+12.5% vs Aug', positive: true },
+        { label: 'OT Room Utilization', value: '91.4%', change: 'Target: >85%', positive: true },
+        { label: 'Mean Room Turnover', value: '18.4 mins', change: '-3.2 mins faster', positive: true },
+        { label: 'Surgical Site Infection (SSI)', value: '0.00%', change: 'Zero SSI Achieved', positive: true },
+      ],
+      tableHeaders: ['Operation Theatre', 'Primary Surgeon', 'Procedures Done', 'Mean Duration', 'Occupancy Rate', 'Sterility Audit'],
+      tableRows: [
+        ['OT-1 (Laminar Flow)', 'Dr. Anand Krishnamurthy', '58 Cases (TKR/THR)', '84 mins', '94.2%', 'Class 100 Passed'],
+        ['OT-2 (Robotic Suite)', 'Dr. Rajesh Rao', '42 Cases (Robotic TKR)', '96 mins', '89.5%', 'Class 100 Passed'],
+        ['OT-3 (Spine & Trauma)', 'Dr. Lakshmi Narasimhan', '28 Cases (Spine/PFN)', '112 mins', '91.0%', 'Class 100 Passed'],
+        ['OT-4 (Daycare Arthroscopy)', 'Dr. Arun Varma', '14 Cases (ACL/Meniscus)', '45 mins', '88.6%', 'Class 100 Passed'],
+      ],
+      signoff: 'Dr. Anand Krishnamurthy, MS (Ortho), MCh — Chief of Orthopedics & OT Director',
+    },
+    {
+      id: 'RPT-DOC-2024-09',
+      title: 'Doctor Surgical & Clinical Performance Report',
+      category: 'Clinical & OT',
+      desc: 'Consultation volumes, surgical conversion ratios, complication rates, and patient satisfaction CSAT scores',
+      date: 'Sep 2024',
+      status: 'Ready' as const,
+      kpis: [
+        { label: 'Active Surgeons', value: '6 Consultants', change: '100% On-Duty', positive: true },
+        { label: 'Total OPD Consults', value: '1,280 Visits', change: '+8.4% MoM', positive: true },
+        { label: 'OPD to Surgery Ratio', value: '24.6%', change: 'Elective Candidate', positive: true },
+        { label: 'Mean Patient CSAT', value: '4.92 / 5.0', change: 'Top 1% Benchmark', positive: true },
+      ],
+      tableHeaders: ['Consultant Name', 'Sub-Specialty', 'OPD Volume', 'Surgeries Done', 'Complication Rate', 'Patient Rating'],
+      tableRows: [
+        ['Dr. Anand Krishnamurthy', 'Joint Reconstruction (Knee/Hip)', '380 Patients', '54 Surgeries', '0.0%', '4.96 ★★★★★'],
+        ['Dr. Lakshmi Narasimhan', 'Spine & Scoliosis Surgery', '240 Patients', '26 Surgeries', '0.0%', '4.91 ★★★★★'],
+        ['Dr. Rajesh Rao', 'Robotic Joint Arthroplasty', '310 Patients', '38 Surgeries', '0.0%', '4.94 ★★★★★'],
+        ['Dr. Arun Varma', 'Arthroscopy & Sports Medicine', '210 Patients', '18 Surgeries', '0.0%', '4.89 ★★★★★'],
+        ['Dr. Sunita Deshmukh', 'Pediatric Orthopedics', '140 Patients', '6 Surgeries', '0.0%', '4.90 ★★★★★'],
+      ],
+      signoff: 'Dr. K. Srinivas Reddy, MD, Medical Superintendent',
+    },
+    {
+      id: 'RPT-FIN-2024-09',
+      title: 'Hospital Financial & TPA Insurance Summary',
+      category: 'Financial',
+      desc: 'Net revenue realization, cashless insurance settlement turnaround, out-of-pocket collections and overdue claims',
+      date: 'Sep 2024',
+      status: 'Ready' as const,
+      kpis: [
+        { label: 'Gross Billed Revenue', value: '₹1,28,50,000', change: '+14.2% vs target', positive: true },
+        { label: 'Net Realized Collections', value: '₹1,12,00,000', change: '87.2% Collection Rate', positive: true },
+        { label: 'Pending TPA Claims', value: '₹16,50,000', change: 'Avg Settlement 8.4 Days', positive: true },
+        { label: 'Aging Overdue (>60d)', value: '₹4,50,000', change: 'Reduced by 35%', positive: true },
+      ],
+      tableHeaders: ['Revenue Stream', 'Billed Amount', 'Collected', 'TPA Cashless Share', 'Outstanding', 'Realization %'],
+      tableRows: [
+        ['Inpatient Arthroplasty (TKR/THR)', '₹74,20,000', '₹66,40,000', '₹52,00,000 (Star/HDFC/ICICI)', '₹7,80,000', '89.5%'],
+        ['Spine & Trauma Inpatient', '₹32,80,000', '₹28,10,000', '₹21,50,000 (MediAssist/Bajaj)', '₹4,70,000', '85.7%'],
+        ['Outpatient OPD & Consultations', '₹9,50,000', '₹9,50,000', '₹0 (Direct Digital Payment)', '₹0', '100%'],
+        ['Diagnostics & High-Field MRI', '₹8,20,000', '₹7,60,000', '₹2,40,000', '₹60,000', '92.7%'],
+        ['Physiotherapy & Tele-Rehab', '₹3,80,000', '₹3,60,000', '₹0 (Self-Pay)', '₹20,000', '94.7%'],
+      ],
+      signoff: 'Kiran Sharma, Chief Financial Officer & Head of TPA Operations',
+    },
+    {
+      id: 'RPT-FOL-2024-09',
+      title: 'Post-Op Follow-Up & Clinical Compliance Audit',
+      category: 'Quality & Rehab',
+      desc: '30-day readmission monitoring, wound healing check compliance, automated WhatsApp reminder reach',
+      date: 'Sep 2024',
+      status: 'Ready' as const,
+      kpis: [
+        { label: '30-Day Follow-Up Rate', value: '94.8%', change: '+3.1% National Avg', positive: true },
+        { label: '30-Day Readmission Rate', value: '0.00%', change: 'Zero Unplanned Readmit', positive: true },
+        { label: 'Rehab Tele-Check Adherence', value: '91.2%', change: '138 of 142 Patients', positive: true },
+        { label: 'Auto-Reminders Delivered', value: '412 Messages', change: '99.4% Delivery via WhatsApp', positive: true },
+      ],
+      tableHeaders: ['Surgical Cohort', 'Total Discharges', 'Day 7 Wound Check', 'Day 14 Suture Removal', 'Day 30 ROM Audit', 'Compliance Status'],
+      tableRows: [
+        ['TKR Joint Reconstruction', '58 Patients', '58 / 58 (100%)', '57 / 58 (98%)', '56 / 58 (96.5%)', 'Exemplary Compliant'],
+        ['THR Hip Replacement', '26 Patients', '26 / 26 (100%)', '26 / 26 (100%)', '25 / 26 (96.1%)', 'Exemplary Compliant'],
+        ['Spine Decompression & Fusion', '22 Patients', '22 / 22 (100%)', '21 / 22 (95.4%)', '20 / 22 (90.9%)', 'Compliant'],
+        ['ACL & Sports Reconstruction', '18 Patients', '18 / 18 (100%)', '18 / 18 (100%)', '17 / 18 (94.4%)', 'Compliant'],
+        ['Trauma DHS / PFN Fixation', '18 Patients', '18 / 18 (100%)', '17 / 18 (94.4%)', '16 / 18 (88.8%)', 'Compliant'],
+      ],
+      signoff: 'Sister Ramya, Ward & Discharge Quality Supervisor',
+    },
+    {
+      id: 'RPT-IMP-2024-09',
+      title: 'Orthopedic Implant Utilization & Consignment Audit',
+      category: 'Clinical & OT',
+      desc: 'Implant consumption, vendor barcode traceability, expiry tracking, consignment stock reconciliation',
+      date: 'Sep 2024',
+      status: 'Ready' as const,
+      kpis: [
+        { label: 'Total Implants Placed', value: '86 Units', change: '100% Barcode Scanned', positive: true },
+        { label: 'Consignment Stock Value', value: '₹42,80,000', change: 'Zero Capital Lockup', positive: true },
+        { label: 'Implant Wastage / Drop', value: '0 Units', change: 'Zero Loss Record', positive: true },
+        { label: 'Manufacturer Recalls', value: '0 Alerts', change: '100% Verified Lots', positive: true },
+      ],
+      tableHeaders: ['Implant System', 'Manufacturer', 'Units Implanted', 'Average Cost / Unit', 'Stock Left', 'Traceability Status'],
+      tableRows: [
+        ['NexGen Cruciate Retaining (CR)', 'Zimmer Biomet', '34 Knees', '₹88,000', '16 Units', '100% Barcode Logged'],
+        ['Persona Personalized Knee', 'Zimmer Biomet', '14 Knees', '₹1,15,000', '8 Units', '100% Barcode Logged'],
+        ['Triathlon Knee System', 'Stryker Orthopaedics', '22 Knees', '₹92,000', '12 Units', '100% Barcode Logged'],
+        ['Accolade II Femoral Stem + Trident Acetabular', 'Stryker', '16 Hips', '₹1,45,000', '6 Units', '100% Barcode Logged'],
+      ],
+      signoff: 'Ramesh V., OT Implant Logistics & Central Consignment Manager',
+    },
+    {
+      id: 'RPT-PT-2024-09',
+      title: 'Physiotherapy Functional Mobility & WOMAC Outcomes',
+      category: 'Quality & Rehab',
+      desc: 'Post-op knee flexion ROM milestones, independent gait milestone days, WOMAC pain & functional recovery indices',
+      date: 'Sep 2024',
+      status: 'Ready' as const,
+      kpis: [
+        { label: 'POD-1 Mobilization Rate', value: '96.2%', change: 'Walked within 24h', positive: true },
+        { label: 'Mean Flexion Gain (Wk 6)', value: '+38.4°', change: 'Mean Achieved: 118°', positive: true },
+        { label: 'WOMAC Score Improvement', value: '68.4%', change: 'Marked Pain Relief', positive: true },
+        { label: 'Arthrofibrosis / MUA Rate', value: '0.00%', change: 'Zero Manipulation Needed', positive: true },
+      ],
+      tableHeaders: ['Rehab Cohort', 'Active Patients', 'Day 1 Walker Ambulation', 'Day 14 Extension Deficit', 'Week 4 Flexion >110°', 'Home Adherence'],
+      tableRows: [
+        ['Fast-Track TKR Cohort', '58 Patients', '56 / 58 (96.5%)', '0° (100% full extension)', '54 / 58 (93.1%)', '92.4% App Logged'],
+        ['Anterior Approach THR', '26 Patients', '26 / 26 (100%)', 'N/A (Full Hip Stability)', '26 / 26 (100%)', '95.0% App Logged'],
+        ['ACL Reconstruction', '18 Patients', '18 / 18 (100%)', 'Full terminal ext.', '16 / 18 (88.8%)', '88.6% App Logged'],
+        ['Spine Rehab Protocol', '22 Patients', '21 / 22 (95.4%)', 'Core Stability Stage 2', '20 / 22 (90.9%)', '89.2% App Logged'],
+      ],
+      signoff: 'Arun Kumar, Chief Physiotherapist & Head of Orthopedic Rehabilitation',
+    },
   ];
+
+  const filteredReports = reportData.filter(r => {
+    const matchCategory = selectedCategory === 'all' || r.category === selectedCategory;
+    const matchSearch = searchQuery === '' ||
+      r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.desc.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.id.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchCategory && matchSearch;
+  });
+
+  const handleExport = (format: string, title: string) => {
+    setExportNotice(`Exported "${title}" as ${format.toUpperCase()} successfully.`);
+    setTimeout(() => setExportNotice(null), 3500);
+  };
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-5">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="page-header"><h1 className="page-title">Reports</h1><p className="page-subtitle">Operational and clinical reports</p></div>
-      </motion.div>
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {reports.map((report, i) => (
-          <motion.div key={report.title} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} className="card-hover p-5 cursor-pointer">
-            <div className="flex items-start justify-between mb-2">
-              <FileBarChart className="w-8 h-8 text-primary-500 p-1.5 bg-primary-50 rounded-lg" />
-              <span className={cn('badge text-[10px]', report.status === 'Ready' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>{report.status}</span>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 page-header">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="page-title">Reports & Clinical Analytics</h1>
+              <span className="badge bg-emerald-100 text-emerald-800 text-[11px] font-bold">
+                NABH / JCI Audit Ready
+              </span>
             </div>
-            <h4 className="text-sm font-semibold text-gray-900 mt-3">{report.title}</h4>
-            <p className="text-xs text-gray-400 mt-1">{report.desc}</p>
-            <p className="text-[10px] text-gray-300 mt-2">{report.date}</p>
+            <p className="page-subtitle">Verified surgical caseload statistics, financial audits, and rehabilitation outcomes</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedPeriod}
+              onChange={e => setSelectedPeriod(e.target.value)}
+              className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-surface-200 bg-white shadow-xs focus:ring-2 focus:ring-primary-500"
+            >
+              <option value="Sep 2024">Sep 2024 (Current)</option>
+              <option value="Aug 2024">August 2024</option>
+              <option value="July 2024">July 2024</option>
+              <option value="Q2 FY 2024-25">Q2 FY 2024-25</option>
+            </select>
+
+            <button
+              onClick={() => handleExport('ZIP Archive', 'All Clinical & Financial Reports')}
+              className="btn-primary !py-1.5 !px-3 !text-xs !rounded-lg flex items-center gap-1.5 shadow-xs"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Export All (ZIP)</span>
+            </button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Export Notification Toast */}
+      {exportNotice && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-semibold text-emerald-900 flex items-center gap-2 shadow-xs"
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{exportNotice}</span>
+        </motion.div>
+      )}
+
+      {/* Filter & Search Bar */}
+      <div className="card p-3 flex flex-col md:flex-row items-center justify-between gap-3">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full md:w-auto">
+          {[
+            { id: 'all', label: `All Reports (${reportData.length})` },
+            { id: 'Clinical & OT', label: 'Clinical & OT' },
+            { id: 'Financial', label: 'Financial' },
+            { id: 'Quality & Rehab', label: 'Quality & Rehab' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedCategory(tab.id)}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all',
+                selectedCategory === tab.id
+                  ? 'bg-primary-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:bg-surface-100'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="relative w-full md:w-72">
+          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search report title, code, keyword..."
+            className="input-base !pl-8 !py-1.5 !text-xs w-full"
+          />
+        </div>
+      </div>
+
+      {/* Reports Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        {filteredReports.map((report, i) => (
+          <motion.div
+            key={report.id}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04 }}
+            className="card-hover p-5 flex flex-col justify-between group border border-surface-200 hover:border-primary-400 transition-all cursor-pointer"
+            onClick={() => setSelectedReport(report)}
+          >
+            <div>
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center shadow-2xs group-hover:bg-primary-600 group-hover:text-white transition-colors">
+                    <FileBarChart className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-mono font-bold text-primary-700 block">{report.id}</span>
+                    <span className="text-[10px] font-semibold text-gray-400">{report.category}</span>
+                  </div>
+                </div>
+                <span className="badge text-[10px] bg-emerald-100 text-emerald-800 font-bold">
+                  {report.status}
+                </span>
+              </div>
+
+              <h4 className="text-sm font-bold text-gray-900 mt-2 group-hover:text-primary-600 transition-colors">
+                {report.title}
+              </h4>
+              <p className="text-xs text-gray-500 mt-1 line-clamp-2 leading-relaxed">
+                {report.desc}
+              </p>
+
+              {/* Highlight KPI Pills */}
+              <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-surface-100">
+                {report.kpis.slice(0, 2).map(kpi => (
+                  <div key={kpi.label} className="p-2 rounded-lg bg-surface-50 border border-surface-200">
+                    <span className="text-[10px] text-gray-500 block truncate">{kpi.label}</span>
+                    <span className="text-xs font-bold text-gray-900 block mt-0.5">{kpi.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-4 pt-3 border-t border-surface-100 flex items-center justify-between text-xs">
+              <span className="text-[11px] font-medium text-gray-400">{report.date} · Verified</span>
+              <button
+                type="button"
+                className="px-3 py-1 rounded-lg bg-primary-50 text-primary-700 font-bold text-xs flex items-center gap-1 hover:bg-primary-100 group-hover:bg-primary-600 group-hover:text-white transition-all shadow-2xs"
+              >
+                <span>Open Dossier</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </motion.div>
         ))}
       </div>
+
+      {/* Comprehensive Report Viewer Modal */}
+      {selectedReport && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/65 backdrop-blur-sm animate-fade-in">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col max-h-[92vh]"
+          >
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary-600 text-white flex items-center justify-center shadow-xs">
+                  <FileBarChart className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-primary-700">{selectedReport.id}</span>
+                    <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold">Official Hospital Audit</span>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 mt-0.5">{selectedReport.title}</h3>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleExport('PDF', selectedReport.title)}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs"
+                >
+                  <Download className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Export PDF</span>
+                </button>
+                <button
+                  onClick={() => handleExport('CSV', selectedReport.title)}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>CSV</span>
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-2xs"
+                >
+                  <Printer className="w-3.5 h-3.5 text-slate-500" />
+                  <span>Print</span>
+                </button>
+                <button
+                  onClick={() => setSelectedReport(null)}
+                  className="w-8 h-8 rounded-lg hover:bg-slate-200 text-slate-500 flex items-center justify-center ml-2"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1">
+              <p className="text-xs text-slate-600 leading-relaxed">{selectedReport.desc}</p>
+
+              {/* 4 Core KPIs */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {selectedReport.kpis.map(kpi => (
+                  <div key={kpi.label} className="p-4 rounded-xl bg-slate-50 border border-slate-200/80">
+                    <span className="text-xs text-slate-500 block leading-tight">{kpi.label}</span>
+                    <span className="text-xl font-extrabold text-slate-900 block mt-1.5">{kpi.value}</span>
+                    <span className={cn('text-[11px] font-semibold mt-1 inline-block', kpi.positive ? 'text-emerald-700' : 'text-slate-500')}>
+                      {kpi.change}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Table Breakdown */}
+              <div className="border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+                <div className="px-4 py-2.5 bg-slate-50/80 border-b border-slate-200 flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">Detailed Clinical Breakdown</span>
+                  <span className="text-[11px] font-semibold text-slate-400">Period: {selectedPeriod}</span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-slate-100 bg-slate-50/40 text-slate-500">
+                        {selectedReport.tableHeaders.map((head, idx) => (
+                          <th key={idx} className="py-2.5 px-4 font-semibold text-[11px]">{head}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {selectedReport.tableRows.map((row, rowIdx) => (
+                        <tr key={rowIdx} className="hover:bg-slate-50/60 transition-colors">
+                          {row.map((cell, cellIdx) => (
+                            <td key={cellIdx} className={cn('py-3 px-4 font-medium', cellIdx === 0 && 'font-bold text-slate-900')}>
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Signoff Stamp */}
+              <div className="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-bold text-emerald-950 block">NABH Medical Compliance Attestation</span>
+                    <span className="text-[11px] text-emerald-800">{selectedReport.signoff}</span>
+                  </div>
+                </div>
+                <div className="text-right shrink-0">
+                  <span className="text-[10px] font-mono text-emerald-700 block">SHA-256 DIGITAL SIGNATURE VERIFIED</span>
+                  <span className="text-[10px] text-emerald-600">Timestamp: 2024-09-22 09:30:14 IST</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }
@@ -3181,29 +3589,762 @@ export function StaffPage() {
 //  SETTINGS
 // ═══════════════════════════════════════════════════
 export function SettingsPage() {
+  const [activeTab, setActiveTab] = useState<string>('all');
+  const [saveToast, setSaveToast] = useState<string | null>(null);
+
+  // Hospital Configuration Form State
+  const [hospitalConfig, setHospitalConfig] = useState({
+    name: 'RASA ORTHO OS — Center for Advanced Orthopedics & Joint Replacement',
+    regNumber: 'NABH-TEL-HYD-2023-0891',
+    emergencyHotline: '+91 (040) 2360-9999',
+    traumaAmbulance: '+91 (040) 2360-108',
+    opdStartTime: '08:00 AM',
+    opdEndTime: '08:00 PM',
+    otStartTime: '07:30 AM',
+    emergency24x7: true,
+    activeBranch: 'Hyderabad - Banjara Hills (Flagship Center)',
+  });
+
+  // Roles & Permissions State
+  const [rolePermissions, setRolePermissions] = useState<{
+    [role: string]: { [perm: string]: boolean };
+  }>({
+    'Chief Orthopedic Surgeon': { viewEMR: true, signRx: true, bookOT: true, reqImplants: true, discharge: true, viewFinance: true },
+    'Consultant Orthopedic': { viewEMR: true, signRx: true, bookOT: true, reqImplants: true, discharge: true, viewFinance: false },
+    'OT Nurse Supervisor': { viewEMR: true, signRx: false, bookOT: true, reqImplants: true, discharge: false, viewFinance: false },
+    'Ward Duty Nurse': { viewEMR: true, signRx: false, bookOT: false, reqImplants: false, discharge: false, viewFinance: false },
+    'Front Desk Reception': { viewEMR: false, signRx: false, bookOT: false, reqImplants: false, discharge: false, viewFinance: false },
+    'Finance & TPA Manager': { viewEMR: false, signRx: false, bookOT: false, reqImplants: true, discharge: false, viewFinance: true },
+  });
+
+  // Notification Triggers State
+  const [notificationConfig, setNotificationConfig] = useState({
+    smsEnabled: true,
+    whatsappEnabled: true,
+    beeperSoundEnabled: true,
+    emailAlertsEnabled: true,
+    criticalLabAlert: true,
+    emergencyOTCodeRed: true,
+    postOpVitalsAlert: true,
+    implantStockLowAlert: true,
+    patient24hReminder: true,
+  });
+
+  // Integration test state
+  const [pacsStatus, setPacsStatus] = useState<'idle' | 'testing' | 'connected'>('connected');
+  const [pacsPing, setPacsPing] = useState('12ms');
+
+  // Preview template modal
+  const [previewTemplate, setPreviewTemplate] = useState<{
+    title: string;
+    specialty: string;
+    sections: { heading: string; body: string }[];
+  } | null>(null);
+
+  const showNotification = (msg: string) => {
+    setSaveToast(msg);
+    setTimeout(() => setSaveToast(null), 3500);
+  };
+
+  const handleTogglePermission = (role: string, perm: string) => {
+    setRolePermissions(prev => ({
+      ...prev,
+      [role]: {
+        ...prev[role],
+        [perm]: !prev[role][perm],
+      },
+    }));
+  };
+
+  const testPacsConnection = () => {
+    setPacsStatus('testing');
+    setTimeout(() => {
+      setPacsStatus('connected');
+      setPacsPing(`${Math.floor(10 + Math.random() * 8)}ms`);
+      showNotification('PACS/DICOM Server Ping verified: C-ECHO Echo SCU Response OK (0x0000)');
+    }, 900);
+  };
+
   const sections = [
-    { title: 'Hospital Configuration', desc: 'Branch settings, departments, operating hours', icon: Settings },
-    { title: 'Roles & Permissions', desc: 'User roles, access control, permission matrix', icon: Shield },
-    { title: 'Notification Preferences', desc: 'Alert settings, channels, escalation rules', icon: MessageSquare },
-    { title: 'Template Management', desc: 'Consultation, prescription, and communication templates', icon: FileBarChart },
-    { title: 'Integration Settings', desc: 'API keys, third-party integrations, webhooks', icon: Zap },
-    { title: 'Audit Configuration', desc: 'Audit log retention, compliance settings', icon: Clock },
+    { id: 'hospital', title: 'Hospital Configuration', desc: 'Branch settings, departments, operating hours, NABH registry', icon: Settings, stats: '3 Branches · 5 Ortho Depts' },
+    { id: 'roles', title: 'Roles & Permissions', desc: 'Clinical access control, surgeon signoff rights, permission matrix', icon: Shield, stats: '6 Roles · 36 Rules' },
+    { id: 'notifications', title: 'Notification Preferences', desc: 'Critical lab alerts, OT emergency beepers, WhatsApp reminders', icon: MessageSquare, stats: '4 Channels · 5 Triggers Active' },
+    { id: 'templates', title: 'Template Management', desc: 'Orthopedic consultation, TKR/THR operative & post-op protocols', icon: FileBarChart, stats: '5 Ortho Clinical Protocols' },
+    { id: 'integrations', title: 'Integration Settings', desc: 'PACS / DICOM port 104, ABDM Ayushman Bharat, WhatsApp Business', icon: Zap, stats: '4 Systems Online · Ping 12ms' },
+    { id: 'audit', title: 'Audit Configuration', desc: 'NABH 7-year audit log retention, 2FA enforcement, SHA-256 hashes', icon: Clock, stats: 'Compliant · 7-Year Retention' },
   ];
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-5">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="page-header"><h1 className="page-title">Settings</h1><p className="page-subtitle">System configuration and preferences</p></div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 page-header">
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="page-title">Hospital Settings & System Configuration</h1>
+              <span className="badge bg-primary-100 text-primary-800 text-[11px] font-bold">
+                Admin Station
+              </span>
+            </div>
+            <p className="page-subtitle">Configure branch parameters, access control matrix, emergency alerts and health integrations</p>
+          </div>
+
+          {activeTab !== 'all' && (
+            <button
+              onClick={() => setActiveTab('all')}
+              className="px-3 py-1.5 rounded-lg border border-surface-200 bg-white hover:bg-surface-50 text-xs font-bold text-gray-700 flex items-center gap-1.5 shadow-2xs self-start sm:self-auto"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Back to Settings Hub</span>
+            </button>
+          )}
+        </div>
       </motion.div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {sections.map((section, i) => (
-          <motion.div key={section.title} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-            className="card-hover p-5 cursor-pointer">
-            <section.icon className="w-8 h-8 text-primary-500 p-1.5 bg-primary-50 rounded-lg mb-3" />
-            <h4 className="text-sm font-semibold text-gray-900">{section.title}</h4>
-            <p className="text-xs text-gray-400 mt-1">{section.desc}</p>
-          </motion.div>
-        ))}
-      </div>
+
+      {/* Save Notification Toast */}
+      {saveToast && (
+        <motion.div
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-semibold text-emerald-900 flex items-center gap-2 shadow-xs"
+        >
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{saveToast}</span>
+        </motion.div>
+      )}
+
+      {/* Tab Selector Bar if inside a specific section */}
+      {activeTab !== 'all' && (
+        <div className="card p-2 flex items-center gap-1.5 overflow-x-auto">
+          {sections.map(sec => (
+            <button
+              key={sec.id}
+              onClick={() => setActiveTab(sec.id)}
+              className={cn(
+                'px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5',
+                activeTab === sec.id
+                  ? 'bg-primary-600 text-white shadow-xs'
+                  : 'text-gray-600 hover:bg-surface-100'
+              )}
+            >
+              <sec.icon className="w-3.5 h-3.5" />
+              <span>{sec.title}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 1. OVERVIEW HUB */}
+      {activeTab === 'all' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {sections.map((section, i) => {
+            const Icon = section.icon;
+            return (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className="card-hover p-5 cursor-pointer border border-surface-200 hover:border-primary-400 group transition-all flex flex-col justify-between"
+                onClick={() => setActiveTab(section.id)}
+              >
+                <div>
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center group-hover:bg-primary-600 group-hover:text-white transition-colors shadow-2xs">
+                      <Icon className="w-5 h-5" />
+                    </div>
+                    <span className="badge text-[10px] bg-surface-100 text-gray-700 font-semibold">
+                      {section.stats}
+                    </span>
+                  </div>
+
+                  <h4 className="text-sm font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+                    {section.title}
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                    {section.desc}
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-surface-100 flex items-center justify-between text-xs">
+                  <span className="text-[11px] font-medium text-gray-400">Click to configure</span>
+                  <span className="font-bold text-primary-600 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                    <span>Manage</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+              </motion.div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* 2. HOSPITAL CONFIGURATION */}
+      {activeTab === 'hospital' && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="card p-6 space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-surface-100">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900">Hospital Legal Identity & Accreditation</h3>
+                <p className="text-xs text-gray-500">Official institution credentials printed on discharge summaries and billing receipts</p>
+              </div>
+              <span className="badge bg-emerald-100 text-emerald-800 text-xs font-bold">NABH Accredited</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Institution Legal Name</label>
+                <input
+                  type="text"
+                  value={hospitalConfig.name}
+                  onChange={e => setHospitalConfig({ ...hospitalConfig, name: e.target.value })}
+                  className="input-base text-xs w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">NABH / Quality Accreditation Code</label>
+                <input
+                  type="text"
+                  value={hospitalConfig.regNumber}
+                  onChange={e => setHospitalConfig({ ...hospitalConfig, regNumber: e.target.value })}
+                  className="input-base text-xs w-full font-mono font-bold text-primary-700"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Emergency Ortho Trauma Hotline</label>
+                <input
+                  type="text"
+                  value={hospitalConfig.emergencyHotline}
+                  onChange={e => setHospitalConfig({ ...hospitalConfig, emergencyHotline: e.target.value })}
+                  className="input-base text-xs w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Critical Care Ambulance Beeper</label>
+                <input
+                  type="text"
+                  value={hospitalConfig.traumaAmbulance}
+                  onChange={e => setHospitalConfig({ ...hospitalConfig, traumaAmbulance: e.target.value })}
+                  className="input-base text-xs w-full"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-surface-100">
+              <h4 className="text-xs font-bold text-gray-900 mb-3">Operating Shifts & Hours</h4>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">OPD Outpatient Hours</label>
+                  <input
+                    type="text"
+                    value={`${hospitalConfig.opdStartTime} - ${hospitalConfig.opdEndTime}`}
+                    onChange={() => {}}
+                    className="input-base text-xs w-full"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold text-gray-600 mb-1">First OT Case Scheduled</label>
+                  <input
+                    type="text"
+                    value={hospitalConfig.otStartTime}
+                    onChange={e => setHospitalConfig({ ...hospitalConfig, otStartTime: e.target.value })}
+                    className="input-base text-xs w-full"
+                  />
+                </div>
+                <div className="flex items-center gap-3 pt-4">
+                  <input
+                    type="checkbox"
+                    id="emergencyToggle"
+                    checked={hospitalConfig.emergency24x7}
+                    onChange={e => setHospitalConfig({ ...hospitalConfig, emergency24x7: e.target.checked })}
+                    className="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
+                  />
+                  <label htmlFor="emergencyToggle" className="text-xs font-bold text-gray-800 cursor-pointer">
+                    24/7 Trauma Emergency Open
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t border-surface-100">
+              <button
+                onClick={() => showNotification('Hospital configuration saved successfully to central database.')}
+                className="btn-primary !py-2 !px-4 !text-xs !rounded-lg flex items-center gap-1.5 shadow-sm"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Hospital Configuration</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* 3. ROLES & PERMISSIONS */}
+      {activeTab === 'roles' && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="card p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-surface-100">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900">Hospital Role-Based Access Control (RBAC)</h3>
+                <p className="text-xs text-gray-500">Define clinical authority, digital signature privileges, and financial access per staff tier</p>
+              </div>
+              <button
+                onClick={() => showNotification('Permission matrix saved and synchronized across all logged-in terminals.')}
+                className="btn-primary !py-1.5 !px-3 !text-xs !rounded-lg flex items-center gap-1.5 shadow-xs"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Changes</span>
+              </button>
+            </div>
+
+            <div className="overflow-x-auto border border-surface-200 rounded-xl">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-surface-50 border-b border-surface-200 text-gray-600 font-semibold">
+                    <th className="py-3 px-4">Hospital Role</th>
+                    <th className="py-3 px-3 text-center">View Full EMR</th>
+                    <th className="py-3 px-3 text-center">Sign Rx</th>
+                    <th className="py-3 px-3 text-center">Book OT</th>
+                    <th className="py-3 px-3 text-center">Req Implants</th>
+                    <th className="py-3 px-3 text-center">Discharge</th>
+                    <th className="py-3 px-3 text-center">View Finance</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-surface-100">
+                  {Object.entries(rolePermissions).map(([role, perms]) => (
+                    <tr key={role} className="hover:bg-surface-50/60 transition-colors">
+                      <td className="py-3 px-4 font-bold text-gray-900">
+                        {role}
+                      </td>
+                      {(['viewEMR', 'signRx', 'bookOT', 'reqImplants', 'discharge', 'viewFinance'] as const).map(perm => {
+                        const isGranted = perms[perm];
+                        return (
+                          <td key={perm} className="py-3 px-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePermission(role, perm)}
+                              className={cn(
+                                'w-6 h-6 rounded-md mx-auto flex items-center justify-center transition-all shadow-2xs',
+                                isGranted
+                                  ? 'bg-emerald-500 text-white'
+                                  : 'bg-surface-200 text-gray-400 hover:bg-surface-300'
+                              )}
+                              title={`${isGranted ? 'Revoke' : 'Grant'} ${perm} for ${role}`}
+                            >
+                              {isGranted ? <Check className="w-3.5 h-3.5" /> : <X className="w-3 h-3" />}
+                            </button>
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-[11px] text-gray-400 italic">
+              * Note: Surgeons and medical directors retain immutable emergency override rights per hospital bylaws.
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* 4. NOTIFICATION PREFERENCES */}
+      {activeTab === 'notifications' && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="card p-6 space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-surface-100">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900">Emergency & Clinical Alert Escalations</h3>
+                <p className="text-xs text-gray-500">Configure instant channels for surgical code reds, panic lab values, and patient communications</p>
+              </div>
+              <button
+                onClick={() => showNotification('Test Emergency Beeper triggered: simulated broadcast sent to OT-1 & Duty Station.')}
+                className="px-3 py-1.5 rounded-lg border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-bold flex items-center gap-1.5 shadow-2xs"
+              >
+                <BellRing className="w-3.5 h-3.5 text-red-600" />
+                <span>Test Alert Beeper</span>
+              </button>
+            </div>
+
+            {/* Channels */}
+            <div>
+              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Active Dispatch Channels</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[
+                  { key: 'whatsappEnabled', label: 'WhatsApp Business API', desc: 'Patient reminders & discharge summaries' },
+                  { key: 'smsEnabled', label: 'SMS Gateway (Kaleyra)', desc: 'OTP & critical panic alerts' },
+                  { key: 'beeperSoundEnabled', label: 'In-App Audio Beeper', desc: 'OT Code Blue & Crash Cart alerts' },
+                  { key: 'emailAlertsEnabled', label: 'Hospital Secure SMTP', desc: 'Daily operational & financial audits' },
+                ].map(item => {
+                  const isChecked = notificationConfig[item.key as keyof typeof notificationConfig];
+                  return (
+                    <div
+                      key={item.key}
+                      onClick={() => setNotificationConfig({ ...notificationConfig, [item.key]: !isChecked })}
+                      className={cn(
+                        'p-3.5 rounded-xl border cursor-pointer transition-all',
+                        isChecked ? 'bg-primary-50/50 border-primary-300 ring-1 ring-primary-300' : 'bg-surface-50 border-surface-200 opacity-60'
+                      )}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs font-bold text-gray-900">{item.label}</span>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => {}}
+                          className="w-3.5 h-3.5 text-primary-600 rounded"
+                        />
+                      </div>
+                      <p className="text-[10px] text-gray-500">{item.desc}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Triggers */}
+            <div className="pt-4 border-t border-surface-100 space-y-3">
+              <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Clinical Trigger Rules</h4>
+              {[
+                { key: 'criticalLabAlert', title: 'Critical Panic Lab Values', detail: 'Instant alert when Hb < 8.0 g/dL, INR > 3.0, or Platelets < 50,000' },
+                { key: 'emergencyOTCodeRed', title: 'OT Emergency Code Red / Code Blue', detail: 'Triggers loud browser beeper sound and alerts all active scrub nurses' },
+                { key: 'postOpVitalsAlert', title: 'Post-Op Ward Vitals Deterioration', detail: 'Triggers push notification to Duty Orthopedic Registrar when SpO2 < 92% or BP < 90/60' },
+                { key: 'implantStockLowAlert', title: 'Consignment Implant Low Stock (< 2 Units)', detail: 'Alerts Central Sterile Supply and Medical Procurement' },
+                { key: 'patient24hReminder', title: '24-Hour Patient Appointment WhatsApp Ping', detail: 'Sends automated directions, appointment slot, and fasting advice to patient' },
+              ].map(trig => {
+                const isChecked = notificationConfig[trig.key as keyof typeof notificationConfig];
+                return (
+                  <div key={trig.key} className="flex items-center justify-between p-3 rounded-xl bg-surface-50 border border-surface-200">
+                    <div>
+                      <p className="text-xs font-bold text-gray-900">{trig.title}</p>
+                      <p className="text-[11px] text-gray-500 mt-0.5">{trig.detail}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setNotificationConfig({ ...notificationConfig, [trig.key]: !isChecked })}
+                      className={cn(
+                        'w-10 h-6 rounded-full transition-colors relative flex items-center p-0.5 shrink-0 ml-4',
+                        isChecked ? 'bg-primary-600' : 'bg-gray-300'
+                      )}
+                    >
+                      <div className={cn('w-5 h-5 rounded-full bg-white transition-transform', isChecked && 'translate-x-4')} />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="flex justify-end pt-3 border-t border-surface-100">
+              <button
+                onClick={() => showNotification('Notification triggers updated successfully.')}
+                className="btn-primary !py-2 !px-4 !text-xs !rounded-lg flex items-center gap-1.5 shadow-sm"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Notification Rules</span>
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* 5. TEMPLATE MANAGEMENT */}
+      {activeTab === 'templates' && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="card p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-surface-100">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900">Standardized Orthopedic EMR Protocols</h3>
+                <p className="text-xs text-gray-500">Fast clinical documentation templates used during OPD examinations and surgical briefings</p>
+              </div>
+              <button
+                onClick={() => showNotification('Clinical template cloned as draft.')}
+                className="btn-primary !py-1.5 !px-3 !text-xs !rounded-lg flex items-center gap-1.5 shadow-xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create New Template</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {[
+                {
+                  title: 'Primary Total Knee Arthroplasty (TKR) Protocol',
+                  specialty: 'Adult Reconstruction',
+                  uses: '840 Consults',
+                  sections: [
+                    { heading: 'Physical Exam', body: 'Goniometer ROM Flexion, Medial Joint Line Tenderness, Coronal Deformity (Varus/Valgus), Lachman stability' },
+                    { heading: 'Radiographic Criteria', body: 'Kellgren-Lawrence Grade III/IV, Medial joint space collapse, Subchondral sclerosis, Osteophytes' },
+                    { heading: 'Surgical Pathway', body: 'Cruciate Retaining (CR) or Posterior Stabilized (PS) implant sizing, Medial parapatellar arthrotomy' },
+                  ],
+                },
+                {
+                  title: 'Arthroscopic ACL Reconstruction + Meniscus Protocol',
+                  specialty: 'Sports Medicine',
+                  uses: '412 Consults',
+                  sections: [
+                    { heading: 'Physical Exam', body: 'Lachman Test (Grade 1/2/3), Pivot Shift test, McMurray medial/lateral click, Joint effusion fluid tap' },
+                    { heading: 'Imaging Criteria', body: 'High-field MRI 1.5T: Complete fiber discontinuity, Bone contusion lateral femoral condyle' },
+                    { heading: 'Surgical Pathway', body: 'Quad / Hamstring autograft harvest, Endobutton femoral fixation, Bio-composite tibial interference screw' },
+                  ],
+                },
+                {
+                  title: 'Primary Total Hip Arthroplasty (Anterior Approach)',
+                  specialty: 'Hip & Pelvis',
+                  uses: '320 Consults',
+                  sections: [
+                    { heading: 'Physical Exam', body: 'Trendelenburg sign, Internal rotation painful restriction, Thomas test for flexion contracture' },
+                    { heading: 'Radiographic Criteria', body: 'Tönnis Grade 3, Femoral head collapse, Acetabular subchondral cyst formation' },
+                    { heading: 'Surgical Pathway', body: 'Hueter interval direct anterior approach, Hydroxyapatite porous coated femoral stem' },
+                  ],
+                },
+                {
+                  title: 'Lumbar Spine Microdiscectomy Protocol',
+                  specialty: 'Spine Surgery',
+                  uses: '280 Consults',
+                  sections: [
+                    { heading: 'Physical Exam', body: 'Straight Leg Raise (SLR) positive at 40°, L5/S1 dermatome hypoesthesia, EHL motor weakness' },
+                    { heading: 'Imaging Criteria', body: 'MRI Lumbar: Paracentral disc extrusion compressing traversing S1 nerve root' },
+                    { heading: 'Surgical Pathway', body: 'Targeted interlaminar flavectomy, microscope-assisted nerve root decompression' },
+                  ],
+                },
+              ].map(tmpl => (
+                <div key={tmpl.title} className="p-4 rounded-xl border border-surface-200 bg-surface-50/50 hover:bg-white transition-all space-y-3 shadow-2xs">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="badge bg-primary-100 text-primary-800 text-[10px] font-bold">{tmpl.specialty}</span>
+                      <h4 className="text-sm font-bold text-gray-900 mt-1">{tmpl.title}</h4>
+                    </div>
+                    <span className="text-[10px] text-gray-400 font-semibold">{tmpl.uses}</span>
+                  </div>
+
+                  <div className="space-y-1.5 text-xs text-gray-600 bg-white p-3 rounded-lg border border-surface-200">
+                    {tmpl.sections.slice(0, 2).map((s, idx) => (
+                      <div key={idx}>
+                        <span className="font-bold text-gray-800">{s.heading}: </span>
+                        <span className="text-gray-500 line-clamp-1">{s.body}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-[11px] text-emerald-700 font-semibold">● Active Default</span>
+                    <button
+                      onClick={() => setPreviewTemplate(tmpl)}
+                      className="px-3 py-1 rounded-lg bg-primary-50 text-primary-700 hover:bg-primary-100 text-xs font-bold flex items-center gap-1 shadow-2xs"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Preview Protocol</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Preview Modal */}
+          {previewTemplate && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
+              <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-xl overflow-hidden p-6 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <span className="badge bg-primary-100 text-primary-800 text-[10px] font-bold">{previewTemplate.specialty}</span>
+                    <h3 className="text-base font-bold text-slate-900 mt-1">{previewTemplate.title}</h3>
+                  </div>
+                  <button onClick={() => setPreviewTemplate(null)} className="w-8 h-8 rounded-lg hover:bg-slate-100 text-slate-500 flex items-center justify-center">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 text-xs max-h-96 overflow-y-auto">
+                  {previewTemplate.sections.map((sec, idx) => (
+                    <div key={idx} className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                      <h5 className="font-bold text-slate-900 mb-1">{sec.heading}</h5>
+                      <p className="text-slate-600 leading-relaxed">{sec.body}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end pt-3 border-t border-slate-100">
+                  <button
+                    onClick={() => {
+                      showNotification(`Template "${previewTemplate.title}" selected as default.`);
+                      setPreviewTemplate(null);
+                    }}
+                    className="btn-primary !py-1.5 !px-4 !text-xs !rounded-lg"
+                  >
+                    Set as Primary EMR Default
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </motion.div>
+      )}
+
+      {/* 6. INTEGRATION SETTINGS */}
+      {activeTab === 'integrations' && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="card p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-surface-100">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900">Hospital Medical System Integrations</h3>
+                <p className="text-xs text-gray-500">Real-time status of PACS imaging servers, government ABDM health IDs, and laboratory feeds</p>
+              </div>
+              <span className="badge bg-emerald-100 text-emerald-800 text-xs font-bold">4 Systems Online</span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* PACS / DICOM */}
+              <div className="p-4 rounded-xl border border-surface-200 bg-surface-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+                      <HardDrive className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-900">PACS / DICOM Imaging Server</h4>
+                      <p className="text-[10px] text-gray-400">Endpoint: pacs.ortho.internal:104 · AE: RASA_ORTHO_PACS</p>
+                    </div>
+                  </div>
+                  <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                    {pacsStatus === 'testing' ? 'Pinging...' : `Online · ${pacsPing}`}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-surface-200 text-xs">
+                  <span className="text-[11px] text-gray-500">Supports Orthanc & DCM4CHEE DICOMweb</span>
+                  <button
+                    onClick={testPacsConnection}
+                    disabled={pacsStatus === 'testing'}
+                    className="px-3 py-1 rounded-lg bg-teal-50 text-teal-700 hover:bg-teal-100 font-bold text-xs flex items-center gap-1 shadow-2xs"
+                  >
+                    <RefreshCw className={cn('w-3 h-3', pacsStatus === 'testing' && 'animate-spin')} />
+                    <span>{pacsStatus === 'testing' ? 'Testing...' : 'Test Ping'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* ABDM */}
+              <div className="p-4 rounded-xl border border-surface-200 bg-surface-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                      <Shield className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-900">Ayushman Bharat Digital Mission (ABDM)</h4>
+                      <p className="text-[10px] text-gray-400">ABHA Sandbox Gateway M1, M2, M3 Milestones</p>
+                    </div>
+                  </div>
+                  <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold">Verified Active</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-surface-200 text-xs">
+                  <span className="text-[11px] text-gray-500">Facility ID: IN3610008491 (Govt. Registry)</span>
+                  <span className="text-[10px] text-indigo-700 font-bold">HIP/HIU Active</span>
+                </div>
+              </div>
+
+              {/* WhatsApp Business API */}
+              <div className="p-4 rounded-xl border border-surface-200 bg-surface-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                      <MessageSquare className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-900">WhatsApp Business Cloud API</h4>
+                      <p className="text-[10px] text-gray-400">Meta Verified Cloud Webhook: 99.98% delivery rate</p>
+                    </div>
+                  </div>
+                  <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold">Connected</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-surface-200 text-xs">
+                  <span className="text-[11px] text-gray-500">Template Sync: 14 Ortho Notifications Verified</span>
+                  <button
+                    onClick={() => showNotification('WhatsApp Business Cloud webhook pinged: HTTP 200 OK')}
+                    className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold text-xs"
+                  >
+                    Ping Webhook
+                  </button>
+                </div>
+              </div>
+
+              {/* LIS HL7 / FHIR */}
+              <div className="p-4 rounded-xl border border-surface-200 bg-surface-50/50 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                      <Activity className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-gray-900">Laboratory Information System (LIS)</h4>
+                      <p className="text-[10px] text-gray-400">HL7 v2.5 / FHIR JSON Pathology auto-feed</p>
+                    </div>
+                  </div>
+                  <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold">Streaming Active</span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-surface-200 text-xs">
+                  <span className="text-[11px] text-gray-500">Auto-links CBC, CRP, Synovial Fluid to EMR</span>
+                  <span className="text-[10px] text-amber-700 font-bold">Port 2575 Open</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* 7. AUDIT CONFIGURATION */}
+      {activeTab === 'audit' && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
+          <div className="card p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-surface-100">
+              <div>
+                <h3 className="text-sm font-bold text-gray-900">NABH & HIPAA Medical Legal Security</h3>
+                <p className="text-xs text-gray-500">Audit trail preservation, tamper-proof EMR cryptographic logging, and session policies</p>
+              </div>
+              <button
+                onClick={() => showNotification('Exported 1,482 audit events as CSV file (audit_trail_2024_09.csv).')}
+                className="btn-primary !py-1.5 !px-3 !text-xs !rounded-lg flex items-center gap-1.5 shadow-xs"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Export Audit Trail (CSV)</span>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {[
+                { title: 'Statutory 7-Year Audit Log Retention', desc: 'Mandatory clinical data preservation under Medical Council & NABH regulations', state: 'Enabled (Permanent)', active: true },
+                { title: 'Mandatory Two-Factor Authentication (2FA)', desc: 'Surgeons and OT charge nurses must verify biometric/OTP before finalizing surgical operative notes', state: 'Enforced for Clinical Staff', active: true },
+                { title: 'Cryptographic SHA-256 Digital Signature Hashing', desc: 'Prevents retroactive modification of prescription orders or goniometer measurements', state: 'Active & Hashing', active: true },
+              ].map(sec => (
+                <div key={sec.title} className="p-4 rounded-xl bg-surface-50 border border-surface-200 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-900">{sec.title}</h4>
+                    <p className="text-[11px] text-gray-500 mt-0.5">{sec.desc}</p>
+                  </div>
+                  <span className="badge bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                    {sec.state}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/50 flex items-center justify-between text-xs">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span className="text-amber-900 font-semibold">Automatic Inactivity Session Lockout Period:</span>
+              </div>
+              <select className="text-xs font-bold px-3 py-1.5 rounded-lg border border-amber-300 bg-white text-amber-950 focus:ring-2 focus:ring-primary-500">
+                <option value="15">15 Minutes (High Security OPD / OT)</option>
+                <option value="30" selected>30 Minutes (Recommended)</option>
+                <option value="60">60 Minutes (Administrative)</option>
+              </select>
+            </div>
+          </div>
+        </motion.div>
+      )}
     </div>
   );
 }

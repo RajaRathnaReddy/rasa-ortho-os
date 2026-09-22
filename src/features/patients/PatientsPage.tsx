@@ -5,10 +5,12 @@ import { Plus, Search, Filter, Download, Users, ChevronRight, Phone, Calendar } 
 import { mockPatients, mockDoctors } from '../../data/mock';
 import { PATIENT_STATUS_CONFIG } from '../../lib/constants';
 import { formatPhone, getInitials, formatDate } from '../../lib/formatters';
+import { useUIStore } from '../../stores/uiStore';
 import { cn } from '../../lib/cn';
 
 export function PatientsPage() {
   const navigate = useNavigate();
+  const { setQuickCreateOpen } = useUIStore();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
 
@@ -27,13 +29,17 @@ export function PatientsPage() {
 
   return (
     <div className="page-container">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
           <div>
             <h1 className="page-title">Patients</h1>
             <p className="page-subtitle">{mockPatients.length} patients registered across all branches</p>
           </div>
-          <button className="btn-primary self-start">
+          <button
+            onClick={() => setQuickCreateOpen(true)}
+            className="btn-primary self-start"
+          >
             <Plus className="w-4 h-4" />
             New Patient
           </button>

@@ -3,6 +3,7 @@ import { Sidebar } from './Sidebar';
 import { TopNav } from './TopNav';
 import { CommandPalette } from '../ui/CommandPalette';
 import { NotificationPanel } from '../ui/NotificationPanel';
+import { QuickCreateModal } from '../ui/QuickCreateModal';
 import { useUIStore } from '../../stores/uiStore';
 import { cn } from '../../lib/cn';
 
@@ -25,6 +26,7 @@ export function AppLayout() {
       </div>
       <CommandPalette />
       <NotificationPanel />
+      <QuickCreateModal />
     </div>
   );
 }
