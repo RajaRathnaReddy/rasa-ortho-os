@@ -4,6 +4,7 @@ import { TopNav } from './TopNav';
 import { CommandPalette } from '../ui/CommandPalette';
 import { NotificationPanel } from '../ui/NotificationPanel';
 import { QuickCreateModal } from '../ui/QuickCreateModal';
+import { FloatingCopilotWidget } from '../ui/FloatingCopilotWidget';
 import { useUIStore } from '../../stores/uiStore';
 import { cn } from '../../lib/cn';
 
@@ -27,6 +28,7 @@ export function AppLayout() {
       <CommandPalette />
       <NotificationPanel />
       <QuickCreateModal />
+      <FloatingCopilotWidget />
     </div>
   );
 }

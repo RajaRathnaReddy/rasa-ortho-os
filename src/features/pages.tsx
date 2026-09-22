@@ -23,6 +23,7 @@ import { BarChart, Bar, AreaChart, Area, ResponsiveContainer, XAxis, YAxis, Tool
 import { DicomViewerModal, SAMPLE_DICOM_STUDIES } from '../components/ui/DicomViewerModal';
 import { INITIAL_OP_TRIAGE_RECORDS, OpTriageData } from '../data/opTriageData';
 import { DoctorPreConsultBrief } from '../components/ui/DoctorPreConsultBrief';
+import { useUIStore } from '../stores/uiStore';
 
 // ═══════════════════════════════════════════════════
 //  RECEPTION WORKSPACE (FRONT-DESK COMMAND STATION)
@@ -3111,22 +3112,10 @@ interface ChatMessage {
 
 export function AIAssistantPage() {
   const navigate = useNavigate();
+  const { setCopilotOpen, setCopilotInitialQuery } = useUIStore();
   const [selectedAgentId, setSelectedAgentId] = useState<string>('followup');
   const [insights, setInsights] = useState<ClinicalInsight[]>(INITIAL_INSIGHTS);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Chat State
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
-    {
-      id: 'm-1',
-      sender: 'assistant',
-      text: "👋 Welcome to the **RASA Orthopedic AI Command Center**. I am your Clinical Copilot connected to the Hospital EMR, PACS Radiographs, Telemetry, and Inventory. How may I assist your clinical or operational workflow today?",
-      time: '10:00 AM',
-      clinicalBadges: ['EMR Synced', 'PACS Ready', 'BioMistral-v2 Active'],
-    },
-  ]);
-  const [query, setQuery] = useState('');
-  const [isThinking, setIsThinking] = useState(false);
 
   const activeAgent = ORTHO_AGENTS.find(a => a.id === selectedAgentId) || ORTHO_AGENTS[0];
 
@@ -3136,87 +3125,9 @@ export function AIAssistantPage() {
     setTimeout(() => setToastMessage(null), 4000);
   };
 
-  const handleSendQuery = (textToSend?: string) => {
-    const messageText = textToSend || query;
-    if (!messageText.trim()) return;
-
-    const userMsg: ChatMessage = {
-      id: `u-${Date.now()}`,
-      sender: 'user',
-      text: messageText,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setChatMessages(prev => [...prev, userMsg]);
-    if (!textToSend) setQuery('');
-    setIsThinking(true);
-
-    // Dynamic Clinical Responses based on query content
-    setTimeout(() => {
-      let aiResponseText = '';
-      let badges: string[] = ['AI Verified'];
-
-      const lower = messageText.toLowerCase();
-      if (lower.includes('pod-14') || lower.includes('overdue') || lower.includes('follow-up') || lower.includes('suture')) {
-        aiResponseText = `### 🚨 Overdue Post-Op Audit (POD-14+)
-Found **12 patients** who have not reported for scheduled stitch/staple removal:
-- **Rajesh Kumar Sharma** (POD-16, Right TKR) · Ph: +91 98765 01001 · Dr. Anand Cabin 101
-- **Lakshmi Devi** (POD-15, Lumbar Discectomy) · Ph: +91 98765 01002 · Dr. Lakshmi Cabin 102
-- **Chandra Sekhar** (POD-14, Left ACL Repair) · Ph: +91 98765 01005 · Dr. Rajeshwari Cabin 103
-
-**Clinical Recommendation:**
-1. Automated interactive WhatsApp wound inspection sent with photo capture trigger.
-2. If non-responsive in 4 hours, escalate to Duty Sister Sister Mary for outbound telephone triage.`;
-        badges = ['Post-Op Sentinel', 'Overdue Cohort', 'Priority High'];
-      } else if (lower.includes('kellgren') || lower.includes('kl grade') || lower.includes('grade iv') || lower.includes('knee oa')) {
-        aiResponseText = `### 🦴 Kellgren-Lawrence Grade IV Clinical Protocol
-**Diagnostic Indicators Identified:**
-- Total obliteration of medial joint space with bone-on-bone contact.
-- Marked subchondral sclerosis and extensive peripheral osteophytes.
-- Corroborated with Token **T-101 (Ramesh Chandra Verma)** standing radiograph XR-2024-8842.
-
-**Recommended Clinical Pathway:**
-1. Indication: High suitability for **Total Knee Arthroplasty (TKR)** with Cruciate Retaining (CR) or Posterior Stabilized (PS) implant.
-2. Pre-Op Mandate: Fasting blood sugar, HbA1c (<7.5%), pre-anesthesia cardiac 2D-ECHO clearance, and cessation of antiplatelets (Ecosprin) 5 days prior.`;
-        badges = ['Radiology AI', 'TKR Pathway', 'KL Grade IV'];
-      } else if (lower.includes('nexgen') || lower.includes('implant') || lower.includes('stock') || lower.includes('depuy')) {
-        aiResponseText = `### 📦 Implant Inventory Diagnostic
-**Depletion Alert — Zimmer NexGen Cruciate Retaining (Size: Medium):**
-- **Current Physical Stock:** 0 units in Main Surgical Sterility Bank.
-- **Immediate Requirement:**
-  - Case 1: Dr. Anand Krishnamurthy (Thursday 08:30 AM, OT 1) — Patient Suresh Babu.
-  - Case 2: Dr. K. Rajeshwari (Saturday 11:00 AM, OT 2) — Patient Deepa Venkat.
-- **Suggested Resolution:** Restock purchase order PO-2024-ZIMMER-881 auto-drafted for 4 units to Zimmer Biomet Regional Depot (Lead time: 24 hours).`;
-        badges = ['Supply Chain AI', 'Critical PO', 'OT 1 & OT 2'];
-      } else if (lower.includes('ot') || lower.includes('surgery') || lower.includes('tomorrow') || lower.includes('lineup')) {
-        aiResponseText = `### 🏥 Tomorrow's Surgical Line-Up & OT Utilization
-- **OT 1 (Joint Arthroplasty Suite):**
-  - **08:30 AM:** Left Total Knee Arthroplasty · Dr. Anand Krishnamurthy (Est: 110m) · Implants reserved.
-  - **11:00 AM:** Primary Right Total Hip Arthroplasty (THR) · Dr. Anand Krishnamurthy (Est: 120m).
-- **OT 2 (Trauma & Arthroscopy):**
-  - **09:15 AM:** Arthroscopic ACL Reconstruction with Hamstring Autograft · Dr. K. Rajeshwari (Est: 80m).
-- **Sterility Audit:** Autoclave cycle completed at 06:00 AM (Zero biological spore growth verified).`;
-        badges = ['OT Scheduler', '100% Ready', 'Sterility Cleared'];
-      } else {
-        aiResponseText = `### 💡 Clinical Analysis for: "${messageText}"
-I have cross-referenced the active Hospital EMR, OPD token board, and current inpatient beds.
-- **Active Doctors:** Dr. Anand Krishnamurthy (Cabin 101), Dr. Lakshmi Narayana (Cabin 102), Dr. K. Rajeshwari (Cabin 103).
-- **System Status:** 91.4% OT room utilization, 0 surgical site infections (SSI), all diagnostic PACS viewers online.
-- Would you like me to pull detailed clinical dossiers, simulate an inventory reorder, or draft a patient communication?`;
-        badges = ['EMR Query', 'Synthesized', 'OrthoOS Core'];
-      }
-
-      const aiMsg: ChatMessage = {
-        id: `a-${Date.now()}`,
-        sender: 'assistant',
-        text: aiResponseText,
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        clinicalBadges: badges,
-      };
-
-      setChatMessages(prev => [...prev, aiMsg]);
-      setIsThinking(false);
-    }, 600);
+  const handleQuickLaunchCopilot = (promptText: string) => {
+    setCopilotInitialQuery(promptText);
+    setCopilotOpen(true);
   };
 
   return (
@@ -3412,10 +3323,71 @@ I have cross-referenced the active Hospital EMR, OPD token board, and current in
         </div>
       </motion.div>
 
-      {/* ═══ 2-COLUMN: CLINICAL ACTION CARDS + INTERACTIVE ORTHOPEDIC COPILOT ═══ */}
+      {/* ═══ COPILOT POPUP LAUNCHER BANNER ═══ */}
+      <div className="card p-4 sm:p-5 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg border border-indigo-900/60 relative overflow-hidden">
+        <div className="absolute right-0 top-0 w-80 h-full bg-radial from-violet-500/10 to-transparent pointer-events-none" />
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 relative z-10">
+          <div className="flex items-start sm:items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center text-white shrink-0 shadow-md shadow-violet-900/50">
+              <Brain className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-sm sm:text-base font-bold text-white flex items-center gap-2">
+                  Ortho Clinical Copilot
+                  <span className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    Floating Popup Online
+                  </span>
+                </h3>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5">
+                Always available as a handy floating popup across all pages. Ask questions without losing your place between tabs.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setCopilotOpen(true)}
+              className="px-4 py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-md shadow-violet-600/30 cursor-pointer"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Open Copilot Popup</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Suggested Quick Prompts */}
+        <div className="mt-4 pt-3 border-t border-indigo-900/60 flex items-center gap-2 overflow-x-auto scrollbar-none">
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-amber-400" />
+            Quick Prompts:
+          </span>
+          {[
+            { label: '🚨 Audit Overdue POD-14', text: 'Audit overdue POD-14 suture removals' },
+            { label: '🦴 Kellgren-Lawrence Gr IV', text: 'Explain Kellgren-Lawrence Grade IV protocol for Cabin 101' },
+            { label: '📦 Check NexGen CR Stock', text: 'Check Zimmer NexGen CR Cruciate Retaining stockout forecast' },
+            { label: '🏥 Tomorrow OT Schedule', text: 'Show tomorrow surgical line-up and OT utilization' },
+            { label: '🩸 DVT Prophylaxis', text: 'Audit DVT chemoprophylaxis protocol compliance for arthroplasty' },
+          ].map((chip, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => handleQuickLaunchCopilot(chip.text)}
+              className="px-3 py-1.5 rounded-xl text-[11px] font-semibold bg-white/10 hover:bg-violet-600/40 text-slate-200 hover:text-white border border-white/10 hover:border-violet-400/50 transition-all whitespace-nowrap cursor-pointer"
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ═══ 2-COLUMN: CLINICAL ACTION CARDS + AUTONOMOUS SENTINEL AUDIT STREAM ═══ */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Operational Insights & Direct Actions */}
-        <div className="lg:col-span-6 xl:col-span-7 space-y-3.5">
+        <div className="lg:col-span-7 space-y-3.5">
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-sm font-bold text-slate-900 flex items-center gap-2">
@@ -3533,138 +3505,113 @@ I have cross-referenced the active Hospital EMR, OPD token board, and current in
           </div>
         </div>
 
-        {/* Right Column: Interactive Clinical Copilot Chat */}
-        <div className="lg:col-span-6 xl:col-span-5 flex flex-col">
-          <div className="card flex-1 flex flex-col overflow-hidden border border-surface-200 shadow-sm min-h-[580px]">
-            {/* Copilot Header */}
-            <div className="p-4 border-b border-surface-200 bg-gradient-to-r from-slate-900 to-indigo-950 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-violet-500/30 border border-violet-400/40 flex items-center justify-center text-violet-300">
-                  <Brain className="w-4.5 h-4.5" />
-                </div>
-                <div>
-                  <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
-                    Ortho Clinical Copilot
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  </h3>
-                  <p className="text-[10px] text-slate-300">Grounded in Hospital EMR, PACS & Operative Protocols</p>
-                </div>
+        {/* Right Column: Live Autonomous Sentinel Activity Stream & Telemetry */}
+        <div className="lg:col-span-5 space-y-4">
+          {/* Autonomous Sentinels Live Audit Stream */}
+          <div className="card p-4 border border-surface-200 shadow-sm bg-white">
+            <div className="flex items-center justify-between pb-3 border-b border-surface-100">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                  Live Sentinel Audit Stream
+                </h3>
               </div>
-              <button
-                type="button"
-                onClick={() => setChatMessages([chatMessages[0]])}
-                className="text-[10px] text-slate-300 hover:text-white px-2 py-1 rounded bg-white/10 hover:bg-white/20 transition-colors"
-                title="Clear conversation"
-              >
-                Reset Chat
-              </button>
+              <span className="text-[10px] text-slate-400 font-mono">Real-time Telemetry</span>
             </div>
 
-            {/* Quick Prompt Chips */}
-            <div className="p-3 bg-surface-50 border-b border-surface-200 overflow-x-auto scrollbar-none flex items-center gap-1.5">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
-                Suggested Prompts:
-              </span>
+            <div className="mt-3 space-y-3">
               {[
-                { label: '🚨 Audit Overdue POD-14', text: 'Audit overdue POD-14 suture removals' },
-                { label: '🦴 Kellgren-Lawrence Gr IV', text: 'Explain Kellgren-Lawrence Grade IV protocol for Cabin 101' },
-                { label: '📦 Check NexGen CR Stock', text: 'Check Zimmer NexGen CR Cruciate Retaining stockout forecast' },
-                { label: '🏥 Tomorrow OT Schedule', text: 'Show tomorrow surgical line-up and OT utilization' },
-              ].map((chip, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => handleSendQuery(chip.text)}
-                  className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-white hover:bg-violet-50 text-slate-700 hover:text-violet-700 border border-surface-200 transition-colors whitespace-nowrap cursor-pointer shadow-2xs"
-                >
-                  {chip.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Chat Scroll Area */}
-            <div className="flex-1 p-4 space-y-3.5 overflow-y-auto max-h-[380px] bg-slate-50/50">
-              {chatMessages.map(msg => (
-                <div
-                  key={msg.id}
-                  className={cn(
-                    'flex flex-col max-w-[90%]',
-                    msg.sender === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'
-                  )}
-                >
-                  <div
-                    className={cn(
-                      'p-3.5 rounded-2xl text-xs leading-relaxed shadow-2xs',
-                      msg.sender === 'user'
-                        ? 'bg-violet-600 text-white rounded-br-none'
-                        : 'bg-white text-slate-900 border border-surface-200 rounded-bl-none prose-sm'
-                    )}
-                  >
-                    <div className="whitespace-pre-line font-normal">
-                      {msg.text.split('### ').map((section, idx) => {
-                        if (idx === 0) return section;
-                        const [title, ...rest] = section.split('\n');
-                        return (
-                          <div key={idx} className="mt-2 pt-1.5 border-t border-surface-100 first:mt-0 first:pt-0 first:border-0">
-                            <span className="font-bold text-violet-800 block mb-1">{title}</span>
-                            <span>{rest.join('\n')}</span>
-                          </div>
-                        );
-                      })}
+                {
+                  agent: 'Post-Op Sentinel',
+                  action: 'Automated interactive WhatsApp wound inspection sent to 4 POD-14 patients',
+                  time: '3 mins ago',
+                  tag: 'WhatsApp Sent',
+                  color: 'text-violet-600 bg-violet-50 border-violet-200',
+                  icon: MessageSquare,
+                },
+                {
+                  agent: 'Implant Stock AI',
+                  action: 'Emergency purchase order PO-2024-ZIMMER-881 generated for 4 units NexGen CR',
+                  time: '14 mins ago',
+                  tag: 'PO Created',
+                  color: 'text-purple-600 bg-purple-50 border-purple-200',
+                  icon: Package,
+                },
+                {
+                  agent: 'Radiology AI',
+                  action: 'Standing knee AP radiograph analyzed: KL Grade IV detected for Token T-101',
+                  time: '32 mins ago',
+                  tag: 'PACS Verified',
+                  color: 'text-blue-600 bg-blue-50 border-blue-200',
+                  icon: Eye,
+                },
+                {
+                  agent: 'OT Utilization AI',
+                  action: 'Autoclave sterilization verified at 06:00 AM; zero biological spore growth detected',
+                  time: '58 mins ago',
+                  tag: 'Sterility OK',
+                  color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+                  icon: ShieldCheck,
+                },
+                {
+                  agent: 'DVT Care Sentinel',
+                  action: 'LMWH & compression stockings reminder acknowledged for Room 204 (Bilateral TKR)',
+                  time: '1 hr ago',
+                  tag: 'DVT Verified',
+                  color: 'text-amber-600 bg-amber-50 border-amber-200',
+                  icon: Syringe,
+                },
+                {
+                  agent: 'Billing Sentinel',
+                  action: 'Pre-auth documentation packet for Star Health Insurance auto-compiled for IP-4821',
+                  time: '2 hrs ago',
+                  tag: 'Claim Fast-Track',
+                  color: 'text-cyan-600 bg-cyan-50 border-cyan-200',
+                  icon: FileText,
+                },
+              ].map((item, idx) => {
+                const ItemIcon = item.icon;
+                return (
+                  <div key={idx} className="flex items-start gap-3 p-2.5 rounded-xl bg-surface-50 border border-surface-100 hover:border-slate-300 transition-colors">
+                    <div className="w-8 h-8 rounded-lg bg-white border border-surface-200 flex items-center justify-center shrink-0 shadow-2xs text-slate-700">
+                      <ItemIcon className="w-4 h-4 text-slate-700" />
                     </div>
-
-                    {msg.clinicalBadges && msg.clinicalBadges.length > 0 && (
-                      <div className="flex items-center gap-1.5 mt-2.5 flex-wrap pt-2 border-t border-surface-100">
-                        {msg.clinicalBadges.map((badge, bi) => (
-                          <span key={bi} className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-violet-50 text-violet-700 border border-violet-200">
-                            {badge}
-                          </span>
-                        ))}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-1 mb-0.5">
+                        <span className="text-[11px] font-bold text-slate-800">{item.agent}</span>
+                        <span className="text-[10px] text-slate-400">{item.time}</span>
                       </div>
-                    )}
+                      <p className="text-[11px] text-slate-600 leading-snug">{item.action}</p>
+                      <div className="mt-1.5">
+                        <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded border', item.color)}>
+                          {item.tag}
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-[9px] text-slate-400 mt-1 px-1">{msg.time}</span>
-                </div>
-              ))}
-
-              {isThinking && (
-                <div className="flex items-center gap-2 p-3 bg-white rounded-2xl border border-surface-200 w-fit text-xs text-slate-500 shadow-2xs">
-                  <Brain className="w-4 h-4 text-violet-600 animate-spin" />
-                  <span className="font-medium">Synthesizing clinical evidence across EMR & PACS...</span>
-                </div>
-              )}
+                );
+              })}
             </div>
+          </div>
 
-            {/* Chat Input Bar */}
-            <div className="p-3 border-t border-surface-200 bg-white">
-              <form
-                onSubmit={e => {
-                  e.preventDefault();
-                  handleSendQuery();
-                }}
-                className="flex items-center gap-2"
-              >
-                <input
-                  type="text"
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder="Ask Clinical Copilot (e.g., 'Check Zimmer NexGen CR inventory' or 'POD-14 suture protocol')..."
-                  className="input-base flex-1 text-xs py-2 px-3"
-                />
-                <button
-                  type="submit"
-                  disabled={!query.trim() || isThinking}
-                  className="btn-primary !bg-violet-600 hover:!bg-violet-700 !text-white !p-2 rounded-xl shadow-xs disabled:opacity-40 cursor-pointer"
-                  title="Send message"
-                >
-                  <Send className="w-4 h-4" />
-                </button>
-              </form>
-              <p className="text-[9px] text-slate-400 mt-1.5 flex items-center gap-1 justify-center text-center">
-                <Lock className="w-2.5 h-2.5 text-emerald-600" />
-                <span>HIPAA & DISHA Compliant · Clinical decisions must be authenticated by the primary orthopedic surgeon</span>
-              </p>
+          {/* Quick Floating Copilot Callout */}
+          <div className="card p-4 bg-gradient-to-br from-violet-50 to-indigo-50/50 border border-violet-200 shadow-xs flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-violet-600 text-white flex items-center justify-center shadow-xs shrink-0">
+                <Bot className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-slate-900">Need specific patient or surgical answers?</h4>
+                <p className="text-[11px] text-slate-600">The copilot popup is ready on every screen across OrthoOS.</p>
+              </div>
             </div>
+            <button
+              type="button"
+              onClick={() => setCopilotOpen(true)}
+              className="btn-primary !bg-violet-600 hover:!bg-violet-700 !text-white !text-xs !py-1.5 !px-3 shrink-0 shadow-xs cursor-pointer"
+            >
+              Open Popup
+            </button>
           </div>
         </div>
       </div>
