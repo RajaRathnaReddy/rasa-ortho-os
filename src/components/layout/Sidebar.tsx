@@ -18,7 +18,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
 
 const navGroups = [
   { group: 'Overview', items: [
-    { key: 'dashboard', label: 'Dashboard', path: '/', icon: 'LayoutDashboard' },
+    { key: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
   ]},
   { group: 'Patient Management', items: [
     { key: 'patients', label: 'Patients', path: '/patients', icon: 'Users' },
@@ -90,15 +90,17 @@ export function Sidebar() {
           'flex items-center h-16 border-b border-surface-200 px-4 shrink-0',
           sidebarCollapsed ? 'justify-center' : 'gap-3'
         )}>
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-sm">
-            <span className="text-white font-bold text-sm">R</span>
-          </div>
-          {!sidebarCollapsed && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-hidden">
-              <h1 className="text-sm font-bold text-gray-900 tracking-tight whitespace-nowrap">RASA ORTHO OS</h1>
-              <p className="text-[10px] text-gray-400 font-medium tracking-wider whitespace-nowrap">INTELLIGENT HOSPITAL OS</p>
-            </motion.div>
-          )}
+          <NavLink to="/dashboard" className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-sm shrink-0">
+              <span className="text-white font-bold text-sm">R</span>
+            </div>
+            {!sidebarCollapsed && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="overflow-hidden text-left">
+                <h1 className="text-sm font-bold text-gray-900 tracking-tight whitespace-nowrap">RASA ORTHO OS</h1>
+                <p className="text-[10px] text-gray-400 font-medium tracking-wider whitespace-nowrap">INTELLIGENT HOSPITAL OS</p>
+              </motion.div>
+            )}
+          </NavLink>
 
           {/* Mobile close */}
           <button

@@ -11,7 +11,8 @@ import {
   Zap, Brain, Shield, Stethoscope, BedDouble, CheckSquare, FileText,
   Printer, Ticket, UserCheck, RefreshCw, Play, HeartPulse, Bone,
   Eye, Maximize2, ShieldAlert, Flame, ChevronRight, LayoutGrid,
-  Download, Save, Filter, ArrowUpRight, Lock, BellRing, Server, HardDrive, FileSpreadsheet, Check, ExternalLink, ChevronLeft, HelpCircle, Building, X
+  Download, Save, Filter, ArrowUpRight, Lock, BellRing, Server, HardDrive, FileSpreadsheet, Check, ExternalLink, ChevronLeft, HelpCircle, Building, X,
+  PhoneCall, Mail, MessageCircle, CheckCheck, Star, SlidersHorizontal, ArrowDownRight, CreditCard, Receipt, Smartphone, ArrowRight, ShieldCheck
 } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { mockDiagnostics, mockPhysiotherapy, mockCommunications, mockDoctors, mockOTs, mockSurgeries, mockAuditLogs, mockInvoices, mockImplants } from '../data/mock';
@@ -2231,131 +2232,812 @@ export function PhysiotherapyPage() {
 }
 
 // ═══════════════════════════════════════════════════
-//  COMMUNICATION CENTER
+//  COMMUNICATION CENTER (OMNICHANNEL PATIENT ENGAGEMENT)
 // ═══════════════════════════════════════════════════
 export function CommunicationPage() {
-  const channelIcons: Record<string, string> = { whatsapp: '💬', sms: '📱', email: '📧', voice: '📞', phone: '☎️' };
+  const [selectedChannel, setSelectedChannel] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeChat, setActiveChat] = useState<{
+    patientName: string;
+    phone: string;
+    uhid: string;
+    channel: string;
+    procedure: string;
+    messages: { sender: 'patient' | 'hospital'; text: string; time: string; status?: string }[];
+  } | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [newMessageModalOpen, setNewMessageModalOpen] = useState(false);
+  const [sendSuccessToast, setSendSuccessToast] = useState('');
+
+  // Rich clinical communications
+  const [communicationsList, setCommunicationsList] = useState([
+    {
+      id: 'comm-1',
+      patientName: 'Rajesh Kumar Sharma',
+      uhid: 'UHID-2024-8842',
+      phone: '+91 98450 12345',
+      channel: 'whatsapp',
+      category: 'post_op',
+      template: 'Day 3 Post-TKR Flexion Protocol',
+      message: 'Dear Rajesh-ji, Dr. Anand Krishnamurthy recommends continuing 30° to 90° passive continuous motion exercises today. Please remember to ice the knee for 15 mins after each session.',
+      status: 'read',
+      createdAt: '2026-09-22T09:30:00Z',
+      procedure: 'Bilateral TKR (Zimmer NexGen CR)',
+      conversation: [
+        { sender: 'hospital' as const, text: 'Hello Rajesh-ji, this is RASA Ortho Care team. How is your right knee pain level this morning on a scale of 1 to 10?', time: '08:45 AM', status: 'read' },
+        { sender: 'patient' as const, text: 'Namaste doctor, pain is around 3 now after taking morning medication. Able to walk to bathroom with walker.', time: '09:12 AM' },
+        { sender: 'hospital' as const, text: 'Excellent progress! Please continue 30° to 90° passive continuous motion exercises today. Remember to ice the knee for 15 mins after each session.', time: '09:30 AM', status: 'read' },
+      ]
+    },
+    {
+      id: 'comm-2',
+      patientName: 'Lakshmi Devi',
+      uhid: 'UHID-2024-8843',
+      phone: '+91 94401 55678',
+      channel: 'whatsapp',
+      category: 'pre_op',
+      template: 'Surgical Fasting Protocol (NPO)',
+      message: 'REMINDER: Your Total Hip Replacement surgery is scheduled for tomorrow at 08:30 AM in OT-2. Maintain strict fasting (no solids or liquids) starting tonight from 12:00 Midnight.',
+      status: 'delivered',
+      createdAt: '2026-09-22T08:15:00Z',
+      procedure: 'Left Total Hip Replacement (DePuy Corail)',
+      conversation: [
+        { sender: 'hospital' as const, text: 'Dear Lakshmi Devi garu, your pre-anesthesia (PAC) clearance is complete. OT-2 is prepared for tomorrow 08:30 AM.', time: 'Yesterday 04:00 PM', status: 'read' },
+        { sender: 'hospital' as const, text: 'REMINDER: Maintain strict fasting (no water, tea or solids) starting tonight from 12:00 Midnight.', time: '08:15 AM', status: 'delivered' },
+      ]
+    },
+    {
+      id: 'comm-3',
+      patientName: 'Mohammed Irfan',
+      uhid: 'UHID-2024-8844',
+      phone: '+91 97000 88991',
+      channel: 'sms',
+      category: 'rehab',
+      template: 'ACL Rehab Milestone Check',
+      message: 'Day 14 Post-ACL Reconstruction: Please upload your knee flexion photo or report to Physiotherapist Arun Kumar for active extension verification.',
+      status: 'delivered',
+      createdAt: '2026-09-21T16:00:00Z',
+      procedure: 'Arthroscopic ACL Reconstruction + Meniscal Repair',
+      conversation: [
+        { sender: 'hospital' as const, text: 'Day 14 Post-ACL Reconstruction: Please report to PT Arun Kumar at 11 AM tomorrow for suture inspection and brace adjustment.', time: 'Yesterday 04:00 PM', status: 'delivered' },
+      ]
+    },
+    {
+      id: 'comm-4',
+      patientName: 'Padmavathi Naidu',
+      uhid: 'UHID-2024-8845',
+      phone: '+91 98888 12121',
+      channel: 'voice',
+      category: 'appointment',
+      template: 'Automated IVR Consultation Confirmation',
+      message: 'Voice Bot Call Completed (Duration 42s): Patient confirmed OP consultation with Dr. Anand Krishnamurthy at Banjara Hills Cabin 101 for 10:15 AM.',
+      status: 'completed',
+      createdAt: '2026-09-21T11:20:00Z',
+      procedure: 'Grade III Knee Osteoarthritis Review',
+      conversation: [
+        { sender: 'hospital' as const, text: 'Automated IVR call triggered to +91 98888 12121. Patient pressed 1 to confirm OP appointment.', time: '11:20 AM', status: 'completed' },
+      ]
+    },
+    {
+      id: 'comm-5',
+      patientName: 'Venkatesh Reddy',
+      uhid: 'UHID-2024-8846',
+      phone: '+91 96666 43210',
+      channel: 'email',
+      category: 'billing',
+      template: 'TPA Cashless Pre-Auth Approval Packet',
+      message: 'Star Health Insurance cashless pre-authorization approval letter of ₹2,10,000 for upcoming spine surgery attached with tax invoice estimate.',
+      status: 'delivered',
+      createdAt: '2026-09-20T14:45:00Z',
+      procedure: 'L4-L5 Lumbar Microdiscectomy',
+      conversation: [
+        { sender: 'hospital' as const, text: 'Email sent with Star Health Pre-Auth Approval letter (Ref: SH-2024-7712). Hospital billing desk is available for queries.', time: '20 Sep 02:45 PM', status: 'delivered' },
+      ]
+    },
+    {
+      id: 'comm-6',
+      patientName: 'Chandra Sekhar',
+      uhid: 'UHID-2024-8847',
+      phone: '+91 99123 45678',
+      channel: 'whatsapp',
+      category: 'rehab',
+      template: 'Physio Missed Appointment Alert',
+      message: 'Dear Chandra Sekhar garu, you missed your scheduled physiotherapy session today at 02:00 PM. Consistent knee mobilization is essential to prevent stiffness.',
+      status: 'delivered',
+      createdAt: '2026-09-20T15:30:00Z',
+      procedure: 'Unilateral TKR (Stryker Triathlon)',
+      conversation: [
+        { sender: 'hospital' as const, text: 'You missed your scheduled physiotherapy session today at 02:00 PM. Please reschedule or do home knee extension exercises.', time: '20 Sep 03:30 PM', status: 'delivered' },
+      ]
+    },
+  ]);
+
+  const channelIcons: Record<string, any> = {
+    whatsapp: MessageCircle,
+    sms: Smartphone,
+    email: Mail,
+    voice: PhoneCall,
+  };
+
+  const channelColors: Record<string, string> = {
+    whatsapp: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+    sms: 'text-blue-700 bg-blue-50 border-blue-200',
+    email: 'text-purple-700 bg-purple-50 border-purple-200',
+    voice: 'text-amber-700 bg-amber-50 border-amber-200',
+  };
+
+  const filteredCommunications = communicationsList.filter(c => {
+    const matchesChannel = selectedChannel === 'all' || c.channel === selectedChannel;
+    const matchesCategory = selectedCategory === 'all' || c.category === selectedCategory;
+    const matchesSearch = searchQuery === '' || 
+      c.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.uhid.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.message.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesChannel && matchesCategory && matchesSearch;
+  });
+
+  const handleSendReply = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!replyText.trim() || !activeChat) return;
+
+    const newMsg = {
+      sender: 'hospital' as const,
+      text: replyText.trim(),
+      time: 'Just now',
+      status: 'delivered',
+    };
+
+    setActiveChat({
+      ...activeChat,
+      messages: [...activeChat.messages, newMsg],
+    });
+
+    setCommunicationsList(prev => prev.map(c => {
+      if (c.patientName === activeChat.patientName) {
+        return {
+          ...c,
+          conversation: [...(c.conversation || []), newMsg],
+          message: replyText.trim(),
+        };
+      }
+      return c;
+    }));
+
+    setReplyText('');
+    setSendSuccessToast(`Message dispatched to ${activeChat.patientName}`);
+    setTimeout(() => setSendSuccessToast(''), 3000);
+  };
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-6">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center justify-between page-header">
-          <div><h1 className="page-title">Communication Center</h1><p className="page-subtitle">{mockCommunications.length} messages sent</p></div>
-          <button className="btn-primary"><Send className="w-4 h-4" />Send Message</button>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
+          <div>
+            <h1 className="page-title flex items-center gap-2.5">
+              <span>Patient Communication Center</span>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 font-mono font-bold">
+                Omnichannel Active
+              </span>
+            </h1>
+            <p className="page-subtitle">
+              Automated Pre-Op Fasting Protocols, WhatsApp Recovery Check-Ins & DLT SMS Gateways
+            </p>
+          </div>
+          <button 
+            onClick={() => setNewMessageModalOpen(true)}
+            className="btn-primary !bg-teal-700 hover:!bg-teal-800 !text-white !font-bold !text-xs !py-2.5 !px-4 shadow-sm rounded-xl flex items-center gap-2 cursor-pointer shrink-0"
+          >
+            <Send className="w-4 h-4" />
+            <span>Broadcast Patient Alert</span>
+          </button>
         </div>
       </motion.div>
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-5">
-        {['whatsapp', 'sms', 'email', 'voice', 'phone'].map(ch => (
-          <div key={ch} className="card p-4 text-center">
-            <span className="text-2xl">{channelIcons[ch]}</span>
-            <p className="text-lg font-bold text-gray-900 mt-1">{mockCommunications.filter(c => c.channel === ch).length}</p>
-            <p className="text-[10px] text-gray-400 capitalize">{ch}</p>
+
+      {/* Gateway Status Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { channel: 'whatsapp', label: 'WhatsApp Cloud API', active: '1,420 Sent', uptime: '99.8% Delivered', icon: MessageCircle, color: 'text-emerald-700 bg-emerald-50 border-emerald-200' },
+          { channel: 'sms', label: 'SMS Kaleyra (DLT)', active: '840 Sent', uptime: '100% Verified', icon: Smartphone, color: 'text-blue-700 bg-blue-50 border-blue-200' },
+          { channel: 'voice', label: 'Voice IVR (Exotel)', active: '310 Calls', uptime: '94% Completed', icon: PhoneCall, color: 'text-amber-700 bg-amber-50 border-amber-200' },
+          { channel: 'email', label: 'Hospital SMTP Mail', active: '480 Sent', uptime: '99.1% Inbox Rate', icon: Mail, color: 'text-purple-700 bg-purple-50 border-purple-200' },
+        ].map((gw) => (
+          <div 
+            key={gw.channel} 
+            onClick={() => setSelectedChannel(selectedChannel === gw.channel ? 'all' : gw.channel)}
+            className={cn(
+              'p-4 rounded-2xl border transition-all cursor-pointer text-left',
+              selectedChannel === gw.channel 
+                ? 'bg-white border-teal-500 shadow-md ring-2 ring-teal-500/20' 
+                : 'bg-white border-slate-200/90 hover:border-slate-300 shadow-2xs'
+            )}
+          >
+            <div className="flex items-center justify-between">
+              <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center border', gw.color)}>
+                <gw.icon className="w-4.5 h-4.5" />
+              </div>
+              <span className="text-[10px] font-mono font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                {gw.active}
+              </span>
+            </div>
+            <p className="text-sm font-bold text-slate-900 mt-2.5">{gw.label}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
+              <span>{gw.uptime}</span>
+            </p>
           </div>
         ))}
       </div>
-      <div className="card overflow-hidden">
-        <table className="w-full">
-          <thead><tr className="bg-surface-50 border-b border-surface-200">
-            <th className="table-cell table-header text-left">Patient</th>
-            <th className="table-cell table-header text-left">Channel</th>
-            <th className="table-cell table-header text-left hidden md:table-cell">Template</th>
-            <th className="table-cell table-header text-left hidden lg:table-cell">Message</th>
-            <th className="table-cell table-header text-left">Status</th>
-            <th className="table-cell table-header text-left hidden md:table-cell">Date</th>
-          </tr></thead>
-          <tbody>
-            {mockCommunications.map(comm => (
-              <tr key={comm.id} className="table-row">
-                <td className="table-cell text-sm font-medium text-gray-900">{comm.patientName}</td>
-                <td className="table-cell text-xs capitalize">{channelIcons[comm.channel]} {comm.channel}</td>
-                <td className="table-cell text-xs text-gray-500 hidden md:table-cell">{comm.template}</td>
-                <td className="table-cell text-xs text-gray-400 hidden lg:table-cell max-w-xs truncate">{comm.message}</td>
-                <td className="table-cell"><span className={cn('badge text-[10px]', comm.status === 'delivered' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700')}>{comm.status}</span></td>
-                <td className="table-cell text-xs text-gray-400 hidden md:table-cell">{formatDate(comm.createdAt)}</td>
-              </tr>
-            ))}
+
+      {/* Filter Tabs & Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Category Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {[
+            { id: 'all', label: 'All Messages' },
+            { id: 'post_op', label: 'Post-Op Recovery' },
+            { id: 'pre_op', label: 'Pre-Op Fasting' },
+            { id: 'rehab', label: 'Rehab Adherence' },
+            { id: 'appointment', label: 'OP Appointments' },
+            { id: 'billing', label: 'Insurance & TPA' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedCategory(tab.id)}
+              className={cn(
+                'px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer',
+                selectedCategory === tab.id
+                  ? 'bg-teal-700 text-white shadow-2xs'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative min-w-[240px]">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search patient, UHID, or text..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:border-teal-500 shadow-2xs"
+          />
+        </div>
+      </div>
+
+      {/* Toast */}
+      {sendSuccessToast && (
+        <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+          <span>{sendSuccessToast}</span>
+        </div>
+      )}
+
+      {/* Communications Table */}
+      <div className="card overflow-hidden border border-slate-200/90 shadow-xs">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="bg-slate-50/80 border-b border-slate-200/90 text-xs font-bold text-slate-600">
+              <th className="py-3 px-4">Patient & UHID</th>
+              <th className="py-3 px-3">Gateway</th>
+              <th className="py-3 px-3 hidden md:table-cell">Protocol Template</th>
+              <th className="py-3 px-3">Message Preview</th>
+              <th className="py-3 px-3">Status</th>
+              <th className="py-3 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 text-xs">
+            {filteredCommunications.map((comm) => {
+              const Icon = channelIcons[comm.channel] || MessageSquare;
+              return (
+                <tr 
+                  key={comm.id} 
+                  onClick={() => setActiveChat({
+                    patientName: comm.patientName,
+                    phone: comm.phone,
+                    uhid: comm.uhid,
+                    channel: comm.channel,
+                    procedure: comm.procedure,
+                    messages: comm.conversation || [
+                      { sender: 'hospital', text: comm.message, time: '10:00 AM', status: 'delivered' }
+                    ]
+                  })}
+                  className="hover:bg-teal-50/30 transition-colors cursor-pointer"
+                >
+                  <td className="py-3.5 px-4">
+                    <p className="font-bold text-slate-900">{comm.patientName}</p>
+                    <p className="text-[11px] font-mono text-slate-400">{comm.uhid} · {comm.phone}</p>
+                  </td>
+                  <td className="py-3.5 px-3">
+                    <span className={cn('inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-bold uppercase', channelColors[comm.channel])}>
+                      <Icon className="w-3.5 h-3.5" />
+                      <span>{comm.channel}</span>
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-3 hidden md:table-cell text-slate-600 font-medium">
+                    <p className="truncate max-w-[180px]">{comm.template}</p>
+                    <p className="text-[10px] text-teal-700 font-semibold">{comm.procedure}</p>
+                  </td>
+                  <td className="py-3.5 px-3 text-slate-600 max-w-xs truncate">
+                    {comm.message}
+                  </td>
+                  <td className="py-3.5 px-3">
+                    <span className={cn(
+                      'px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 capitalize',
+                      comm.status === 'read' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                      comm.status === 'delivered' ? 'bg-blue-50 text-blue-700 border border-blue-200' :
+                      'bg-slate-100 text-slate-700'
+                    )}>
+                      {comm.status === 'read' && <CheckCheck className="w-3 h-3 text-emerald-600" />}
+                      <span>{comm.status}</span>
+                    </span>
+                  </td>
+                  <td className="py-3.5 px-4 text-right">
+                    <button className="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-xs border border-teal-200 transition-colors cursor-pointer">
+                      Open Chat
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
+
+      {/* Interactive Chat Drawer Modal */}
+      {activeChat && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-end">
+          <div className="w-full max-w-lg h-full bg-white shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-200 text-left">
+            {/* Drawer Header */}
+            <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-700 text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                  {getInitials(activeChat.patientName)}
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900">{activeChat.patientName}</h3>
+                  <p className="text-[11px] text-slate-500 font-mono">{activeChat.uhid} · {activeChat.phone}</p>
+                  <p className="text-[10px] text-teal-700 font-semibold">{activeChat.procedure}</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setActiveChat(null)}
+                className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Chat Thread Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-100/60">
+              <div className="text-center my-2">
+                <span className="text-[10px] font-bold text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-200 shadow-2xs">
+                  Encrypted Patient Communications Channel
+                </span>
+              </div>
+
+              {activeChat.messages.map((m, i) => (
+                <div 
+                  key={i} 
+                  className={cn('flex flex-col', m.sender === 'hospital' ? 'items-end' : 'items-start')}
+                >
+                  <div className={cn(
+                    'p-3.5 rounded-2xl max-w-[85%] text-xs shadow-2xs space-y-1',
+                    m.sender === 'hospital' 
+                      ? 'bg-teal-700 text-white rounded-tr-none' 
+                      : 'bg-white border border-slate-200 text-slate-800 rounded-tl-none'
+                  )}>
+                    <p className="leading-relaxed">{m.text}</p>
+                    <div className={cn('flex items-center justify-end gap-1 text-[10px]', m.sender === 'hospital' ? 'text-teal-200' : 'text-slate-400')}>
+                      <span>{m.time}</span>
+                      {m.sender === 'hospital' && <CheckCheck className="w-3 h-3 text-teal-200" />}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Interactive Reply Input */}
+            <form onSubmit={handleSendReply} className="p-4 border-t border-slate-200 bg-white space-y-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={replyText}
+                  onChange={e => setReplyText(e.target.value)}
+                  placeholder="Type clinical message or prescription advice..."
+                  className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-teal-500 focus:bg-white transition-all shadow-2xs"
+                />
+                <button
+                  type="submit"
+                  disabled={!replyText.trim()}
+                  className="p-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-bold transition-all disabled:opacity-40 cursor-pointer shadow-xs"
+                >
+                  <Send className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400">
+                Messages sent via hospital verified WhatsApp Gateway (+91 80 4000 5000)
+              </p>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Broadcast Message Modal */}
+      {newMessageModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl space-y-4 text-left border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-slate-900">Broadcast Clinical Alert</h3>
+              <button onClick={() => setNewMessageModalOpen(false)} className="p-1 text-slate-400 hover:text-slate-600">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Target Patient Cohort</label>
+                <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs">
+                  <option>All Inpatient Joint Surgeries Tomorrow (Fasting Protocol)</option>
+                  <option>Post-Op Day 3 Follow-Up Cohort</option>
+                  <option>Physiotherapy Adherence Reminder</option>
+                </select>
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Delivery Channel</label>
+                <div className="flex gap-2">
+                  <span className="px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 font-bold">WhatsApp + SMS</span>
+                  <span className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600">IVR Voice Call</span>
+                </div>
+              </div>
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Message Content</label>
+                <textarea 
+                  rows={3} 
+                  defaultValue="Reminder: Please adhere to NPO fasting guidelines starting 12:00 Midnight. RASA Ortho Care team is prepared for your morning procedure."
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs text-slate-800"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <button 
+                onClick={() => setNewMessageModalOpen(false)}
+                className="px-4 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={() => {
+                  setNewMessageModalOpen(false);
+                  setSendSuccessToast('Broadcast delivered to 14 scheduled surgical patients.');
+                  setTimeout(() => setSendSuccessToast(''), 3000);
+                }}
+                className="px-4 py-2 rounded-xl bg-teal-700 text-white text-xs font-bold shadow-sm hover:bg-teal-800"
+              >
+                Send Broadcast
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════
-//  AI ASSISTANT
+//  AI ASSISTANT (ORTHOPEDIC CLINICAL DECISION SUPPORT)
 // ═══════════════════════════════════════════════════
 export function AIAssistantPage() {
   const [query, setQuery] = useState('');
-  const insights = [
-    { icon: AlertCircle, color: 'text-red-500 bg-red-50', title: '12 post-operative patients are overdue for follow-up', desc: 'Average delay: 5 days. Priority: High. Click to view list.', tag: 'AI Follow-Up Agent' },
-    { icon: Dumbbell, color: 'text-amber-500 bg-amber-50', title: '3 patients missed physiotherapy this week', desc: 'Patients: Rajesh Kumar, Lakshmi Devi, Chandra Sekhar. Adherence rate: 72%.', tag: 'AI Recovery Monitor' },
-    { icon: Package, color: 'text-purple-500 bg-purple-50', title: 'Implant stock for NexGen Medium may require replenishment', desc: 'Current stock: 0. Upcoming surgeries requiring this implant: 2 in next 7 days.', tag: 'AI Inventory Intelligence' },
-    { icon: TrendingUp, color: 'text-emerald-500 bg-emerald-50', title: 'Surgery volume up 15% this month', desc: 'Total knee replacements increased by 23%. OT utilization at peak on Wednesdays.', tag: 'AI Analytics' },
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [activeReport, setActiveReport] = useState<{
+    queryTitle: string;
+    summary: string;
+    urgency: 'high' | 'medium' | 'low';
+    dataItems: { name: string; detail: string; action: string }[];
+    recommendations: string[];
+  } | null>(null);
+
+  const aiAgents = [
+    { label: 'Pre-Op Risk Agent', icon: ShieldAlert, color: 'bg-rose-500', status: 'Online · Continuous', desc: 'ASA grade & anticoagulant clearance monitoring' },
+    { label: 'Implant Forecaster', icon: Bone, color: 'bg-purple-500', status: 'Online · Auto-Replenish', desc: 'Predicts Zimmer/Stryker sizing from PACS scans' },
+    { label: 'WOMAC & ROM Monitor', icon: Dumbbell, color: 'bg-teal-500', status: 'Online · 94% Adherence', desc: 'Knee flexion curve progression vs historical benchmark' },
+    { label: 'OT Sterility Optimizer', icon: Flame, color: 'bg-amber-500', status: 'Online · Laminar Verified', desc: 'Laminar airflow changeovers & cabin turnaround times' },
+    { label: 'TPA Pre-Auth Bot', icon: IndianRupee, color: 'bg-indigo-500', status: 'Online · IRDAI Code Valid', desc: 'Prepares cashless bundles with zero deduction flags' },
+    { label: 'Bilingual Voice/SMS', icon: MessageSquare, color: 'bg-blue-500', status: 'Online · Telugu/English', desc: 'Translates recovery advice into regional dialects' },
   ];
 
+  const operationalInsights = [
+    {
+      icon: AlertCircle,
+      color: 'text-red-700 bg-red-50 border-red-200',
+      title: '12 Post-Operative Patients Overdue for 6-Week Goniometry Review',
+      desc: 'Mean delay: 5.4 days. 3 patients have recorded <85° flexion in app telemetry. Risk of arthrofibrosis requires immediate clinical check.',
+      tag: 'AI Recovery Monitor',
+      actionText: 'Trigger WhatsApp Suture/ROM Reminder',
+    },
+    {
+      icon: Package,
+      color: 'text-amber-700 bg-amber-50 border-amber-200',
+      title: 'Implant Stock Alert: Zimmer NexGen CR Size 3 Femoral Component',
+      desc: 'Current Central Stores Stock: 1 unit. Upcoming TKR surgeries scheduled for next 7 days requiring this size: 3 cases.',
+      tag: 'AI Implant Intelligence',
+      actionText: 'Raise Purchase Indent to Zimmer Biomet',
+    },
+    {
+      icon: Dumbbell,
+      color: 'text-blue-700 bg-blue-50 border-blue-200',
+      title: '3 Patients Missed Inpatient Daycare Physiotherapy Sessions',
+      desc: 'Patients: Rajesh Kumar (UHID-8842), Lakshmi Devi (UHID-8843), Chandra Sekhar (UHID-8847). Compliance rate dropped to 74%.',
+      tag: 'AI Rehab Adherence',
+      actionText: 'Assign PT Arun Kumar for Ward Visit',
+    },
+    {
+      icon: TrendingUp,
+      color: 'text-emerald-700 bg-emerald-50 border-emerald-200',
+      title: 'OT Turnaround Time Improved by 18% Across Theatres 1-4',
+      desc: 'Mean cabin changeover reduced from 34 minutes to 28 minutes. Instrument tray pre-sterilisation synchronization active.',
+      tag: 'AI Operational Analytics',
+      actionText: 'View Theatre Efficiency Breakdown',
+    },
+  ];
+
+  const quickPrompts = [
+    'Identify high-risk TKR patients scheduled this week',
+    'Implant stock forecast for Zimmer NexGen vs OT list',
+    'List patients overdue for 6-week goniometry review',
+    'Analyze OT laminar airflow and turnaround times',
+  ];
+
+  const handleRunQuery = (q: string) => {
+    setQuery(q);
+    setIsProcessing(true);
+
+    setTimeout(() => {
+      setIsProcessing(false);
+      if (q.toLowerCase().includes('high-risk') || q.toLowerCase().includes('tkr')) {
+        setActiveReport({
+          queryTitle: 'Pre-Op Surgical Risk Stratification (Upcoming 7 Days)',
+          summary: 'Scanned 14 scheduled arthroplasty patients. Identified 2 patients with critical anticoagulation clearance flags requiring cardiologist sign-off.',
+          urgency: 'high',
+          dataItems: [
+            { name: 'Lakshmi Devi (62F)', detail: 'On Ecosprin 75mg · Last dose 2 days ago · Target: 5 days stop', action: 'Hold Aspirin & Reschedule OT to Friday' },
+            { name: 'Srinivas Murthy (68M)', detail: 'HbA1c 8.4% · SSI risk elevated · Requires endocrinologist sliding scale', action: 'Initiate Pre-Op Glycemic Protocol' },
+          ],
+          recommendations: [
+            'Obtain 2D-ECHO clearance for Lakshmi Devi prior to spinal anesthesia',
+            'Verify cross-matched 2 units PRBC reservation in hospital blood bank',
+            'Enforce Chlorhexidine antiseptic shower 12 hours pre-incision',
+          ],
+        });
+      } else if (q.toLowerCase().includes('implant') || q.toLowerCase().includes('stock')) {
+        setActiveReport({
+          queryTitle: 'Prosthetic Implant Reserve vs Surgical Indent Forecast',
+          summary: 'Matched upcoming surgical OT cases with GS1 barcoded inventory. 2 critical implants need emergency courier from regional warehouse.',
+          urgency: 'medium',
+          dataItems: [
+            { name: 'Zimmer NexGen CR Size 3 Femoral', detail: 'Stock: 1 | Demand: 3 cases | Gap: -2 units', action: 'Expedite Zimmer Biomet India Indent' },
+            { name: 'Stryker Triathlon Tibial Insert 11mm', detail: 'Stock: 0 | Demand: 1 case | Gap: -1 unit', action: 'Order from Stryker Hyderabad Hub' },
+          ],
+          recommendations: [
+            'Confirm sterile tray arrival by 6:00 PM today for tomorrow morning OT-1',
+            'Double-check trial sizer box completeness in autoclave room',
+          ],
+        });
+      } else {
+        setActiveReport({
+          queryTitle: 'Orthopedic Follow-Up & Rehabilitation Compliance Audit',
+          summary: 'Audited 42 post-op patients across Hyderabad and Nandyal campuses. Overall 6-week flexion compliance is at 88.2%.',
+          urgency: 'low',
+          dataItems: [
+            { name: 'Rajesh Kumar Sharma', detail: 'Post-Op Day 3 · Flexion 75° · Walker gait active', action: 'Continue home cryotherapy protocol' },
+            { name: 'Chandra Sekhar', detail: 'Post-Op Day 14 · Flexion 65° (lagging by 20°)', action: 'Schedule clinical evaluation for stiffness' },
+          ],
+          recommendations: [
+            'Send automated bilingual Telugu/English flexion exercise video via WhatsApp',
+            'Assign dedicated home PT visit for patients falling behind curve',
+          ],
+        });
+      }
+    }, 600);
+  };
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-6 text-left">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="page-header">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-violet-600 to-purple-700 flex items-center justify-center shadow-md text-white border border-purple-400/30">
+              <Sparkles className="w-6 h-6" />
             </div>
-            <div><h1 className="page-title">AI Command Center</h1><p className="page-subtitle">Intelligent operational insights and automation</p></div>
+            <div>
+              <h1 className="page-title flex items-center gap-2">
+                <span>AI Clinical Command Center</span>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-mono font-bold">
+                  Clinical Intelligence Core
+                </span>
+              </h1>
+              <p className="page-subtitle">Real-time surgical risk analysis, implant forecasting, and recovery monitoring</p>
+            </div>
           </div>
         </div>
       </motion.div>
 
-      {/* AI Capabilities */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-        {[
-          { label: 'AI Receptionist', icon: MonitorSmartphone, color: 'bg-blue-500' },
-          { label: 'Follow-Up Agent', icon: CalendarDays, color: 'bg-rose-500' },
-          { label: 'Patient Summary', icon: Users, color: 'bg-teal-500' },
-          { label: 'Voice Booking', icon: Phone, color: 'bg-amber-500' },
-          { label: 'Comm Assistant', icon: MessageSquare, color: 'bg-indigo-500' },
-          { label: 'Insights Engine', icon: Brain, color: 'bg-purple-500' },
-        ].map(cap => (
-          <div key={cap.label} className="card p-4 text-center hover:shadow-md transition-shadow cursor-pointer">
-            <div className={cn('w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center text-white', cap.color)}>
-              <cap.icon className="w-5 h-5" />
+      {/* 6 AI Agents Matrix */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        {aiAgents.map((ag) => (
+          <div 
+            key={ag.label} 
+            onClick={() => handleRunQuery(`Run diagnostics for ${ag.label}`)}
+            className="p-3.5 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:border-purple-300 hover:shadow-md transition-all cursor-pointer group"
+          >
+            <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center text-white mb-2 shadow-xs', ag.color)}>
+              <ag.icon className="w-4.5 h-4.5" />
             </div>
-            <p className="text-xs font-medium text-gray-700">{cap.label}</p>
+            <p className="text-xs font-bold text-slate-900 group-hover:text-purple-700 transition-colors leading-tight">{ag.label}</p>
+            <p className="text-[10px] font-semibold text-emerald-600 mt-1">{ag.status}</p>
           </div>
         ))}
       </div>
 
-      {/* AI Insights */}
-      <div className="space-y-3 mb-6">
-        <h3 className="section-title">Operational Insights</h3>
-        {insights.map((insight, i) => (
-          <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.1 }}
-            className="card-hover p-4 flex items-start gap-4 cursor-pointer">
-            <div className={cn('w-9 h-9 rounded-lg flex items-center justify-center shrink-0', insight.color)}>
-              <insight.icon className="w-4.5 h-4.5" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-gray-900">{insight.title}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{insight.desc}</p>
-              <div className="flex items-center gap-2 mt-2">
-                <span className="badge bg-violet-50 text-violet-600 text-[9px]"><Sparkles className="w-2.5 h-2.5" /> {insight.tag}</span>
-                <span className="text-[9px] text-gray-400 italic">AI-generated insight</span>
-              </div>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* AI Chat */}
-      <div className="card">
-        <div className="p-4 border-b border-surface-100">
-          <h3 className="text-sm font-semibold text-gray-900">Ask AI Assistant</h3>
-          <p className="text-[10px] text-gray-400">⚠️ AI-generated content — always verify before clinical decisions</p>
+      {/* AI Interactive Query Console */}
+      <div className="card p-5 border border-purple-200/80 bg-gradient-to-br from-purple-50/40 via-white to-slate-50 shadow-sm space-y-4">
+        <div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <Brain className="w-4 h-4 text-purple-600" />
+              <span>Ask Orthopedic Intelligence Console</span>
+            </h3>
+            <span className="text-[10px] text-slate-400 font-mono">MODEL: ORTHO-CLINICAL-V2.4</span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Query patients, surgical schedules, implant availability, or clinical recovery trajectories.
+          </p>
         </div>
-        <div className="p-4">
-          <div className="flex gap-2">
-            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Ask about patients, operations, analytics..." className="input-base flex-1" />
-            <button className="btn-primary"><Send className="w-4 h-4" /></button>
+
+        {/* Quick Prompt Pills */}
+        <div className="flex flex-wrap gap-2">
+          {quickPrompts.map((p, i) => (
+            <button
+              key={i}
+              onClick={() => handleRunQuery(p)}
+              className="px-3 py-1.5 rounded-xl bg-white border border-purple-200 text-purple-900 hover:bg-purple-50 text-xs font-semibold shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+            >
+              <Sparkles className="w-3 h-3 text-purple-600" />
+              <span>{p}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Query Input Bar */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleRunQuery(query)}
+            placeholder="e.g. Which patients have delayed knee flexion at 6-week review?"
+            className="flex-1 bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 placeholder:text-slate-400 focus:outline-hidden focus:border-purple-500 focus:ring-2 focus:ring-purple-500/10 shadow-2xs font-mono"
+          />
+          <button
+            onClick={() => handleRunQuery(query || quickPrompts[0])}
+            disabled={isProcessing}
+            className="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+          >
+            {isProcessing ? (
+              <>
+                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Analyzing...</span>
+              </>
+            ) : (
+              <>
+                <Send className="w-3.5 h-3.5" />
+                <span>Execute Query</span>
+              </>
+            )}
+          </button>
+        </div>
+      </div>
+
+      {/* Generated AI Clinical Report (when query is run) */}
+      {activeReport && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="p-5 rounded-2xl bg-white border-2 border-purple-400/40 shadow-lg space-y-4"
+        >
+          <div className="flex items-start justify-between border-b border-slate-100 pb-3">
+            <div>
+              <span className={cn(
+                'px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider',
+                activeReport.urgency === 'high' ? 'bg-rose-50 text-rose-700 border border-rose-200' :
+                activeReport.urgency === 'medium' ? 'bg-amber-50 text-amber-700 border border-amber-200' :
+                'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              )}>
+                {activeReport.urgency.toUpperCase()} PRIORITY AUDIT
+              </span>
+              <h3 className="text-base font-black text-slate-900 mt-1">{activeReport.queryTitle}</h3>
+              <p className="text-xs text-slate-600 mt-0.5">{activeReport.summary}</p>
+            </div>
+            <button 
+              onClick={() => setActiveReport(null)}
+              className="text-slate-400 hover:text-slate-600 p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
+
+          {/* Data Items */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Identified Clinical Records</h4>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              {activeReport.dataItems.map((item, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-1 text-xs">
+                  <p className="font-bold text-slate-900">{item.name}</p>
+                  <p className="text-slate-600 text-[11px]">{item.detail}</p>
+                  <button className="mt-1 px-2.5 py-1 rounded-lg bg-purple-50 text-purple-800 border border-purple-200 text-[10px] font-bold hover:bg-purple-100 transition-colors">
+                    {item.action}
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Action Recommendations */}
+          <div className="p-3.5 rounded-xl bg-purple-50/60 border border-purple-200 space-y-1.5 text-xs">
+            <h4 className="font-bold text-purple-900 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-purple-600" />
+              <span>Recommended Clinical Protocol Actions</span>
+            </h4>
+            <ul className="space-y-1 text-slate-700 text-[11px] list-disc list-inside">
+              {activeReport.recommendations.map((r, i) => (
+                <li key={i}>{r}</li>
+              ))}
+            </ul>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Operational Insights Feed */}
+      <div className="space-y-3">
+        <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider">Live Orthopedic Operational Insights</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {operationalInsights.map((insight, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+              className="p-4 rounded-2xl bg-white border border-slate-200/90 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between space-y-3"
+            >
+              <div className="flex items-start gap-3">
+                <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border', insight.color)}>
+                  <insight.icon className="w-4.5 h-4.5" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 leading-snug">{insight.title}</h4>
+                  <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">{insight.desc}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <span className="text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">
+                  {insight.tag}
+                </span>
+                <button 
+                  onClick={() => handleRunQuery(insight.title)}
+                  className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <span>{insight.actionText}</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
     </div>
@@ -2363,80 +3045,311 @@ export function AIAssistantPage() {
 }
 
 // ═══════════════════════════════════════════════════
-//  ANALYTICS
+//  ANALYTICS (CLINICAL & SURGICAL PERFORMANCE)
 // ═══════════════════════════════════════════════════
-const analyticsData = [
-  { month: 'Apr', patients: 180, surgeries: 12, revenue: 82 },
-  { month: 'May', patients: 210, surgeries: 15, revenue: 91 },
-  { month: 'Jun', patients: 195, surgeries: 18, revenue: 105 },
-  { month: 'Jul', patients: 230, surgeries: 14, revenue: 98 },
-  { month: 'Aug', patients: 250, surgeries: 20, revenue: 112 },
-  { month: 'Sep', patients: 268, surgeries: 22, revenue: 128 },
-];
-
-const pieData = [
-  { name: 'Consultation', value: 35, color: '#818cf8' },
-  { name: 'Surgery', value: 40, color: '#f59e0b' },
-  { name: 'Diagnostics', value: 10, color: '#10b981' },
-  { name: 'Physiotherapy', value: 8, color: '#ec4899' },
-  { name: 'Others', value: 7, color: '#94a3b8' },
-];
-
 export function AnalyticsPage() {
+  const [timeframe, setTimeframe] = useState<string>('Sep 2024');
+  const [specialtyFilter, setSpecialtyFilter] = useState<string>('all');
+
+  const surgicalTrajectoryData = [
+    { month: 'Apr', totalSurgeries: 112, jointReplacements: 48, arthroscopies: 28, traumaCases: 24, spineCases: 12, revenueLakhs: 82 },
+    { month: 'May', totalSurgeries: 125, jointReplacements: 54, arthroscopies: 32, traumaCases: 25, spineCases: 14, revenueLakhs: 91 },
+    { month: 'Jun', totalSurgeries: 118, jointReplacements: 50, arthroscopies: 30, traumaCases: 22, spineCases: 16, revenueLakhs: 105 },
+    { month: 'Jul', totalSurgeries: 132, jointReplacements: 58, arthroscopies: 34, traumaCases: 26, spineCases: 14, revenueLakhs: 98 },
+    { month: 'Aug', totalSurgeries: 138, jointReplacements: 62, arthroscopies: 36, traumaCases: 24, spineCases: 16, revenueLakhs: 112 },
+    { month: 'Sep', totalSurgeries: 142, jointReplacements: 66, arthroscopies: 38, traumaCases: 22, spineCases: 16, revenueLakhs: 128 },
+  ];
+
+  const specialtyRevenueData = [
+    { name: 'Joint Arthroplasty (TKR/THR)', value: 42, color: '#0f766e', amount: '₹53.9 Lakhs' },
+    { name: 'Arthroscopy & Sports Med', value: 24, color: '#0284c7', amount: '₹30.8 Lakhs' },
+    { name: 'Spine & Deformity', value: 16, color: '#7c3aed', amount: '₹20.5 Lakhs' },
+    { name: 'Complex Trauma & Ilizarov', value: 12, color: '#d97706', amount: '₹15.4 Lakhs' },
+    { name: 'OPD, Daycare & Diagnostics', value: 6, color: '#64748b', amount: '₹7.9 Lakhs' },
+  ];
+
+  const implantBrandShare = [
+    { brand: 'Zimmer Biomet (NexGen/Persona)', share: 48, units: 68, color: '#0f766e' },
+    { brand: 'Stryker (Triathlon/Accolade)', share: 26, units: 37, color: '#0284c7' },
+    { brand: 'DePuy Synthes (Attune/Corail)', share: 18, units: 25, color: '#8b5cf6' },
+    { brand: 'Smith & Nephew (Journey II)', share: 8, units: 12, color: '#f59e0b' },
+  ];
+
+  const flexionRecoveryCurve = [
+    { milestone: 'Pre-Op', meanFlexion: 62, targetFlexion: 60 },
+    { milestone: 'Day 2', meanFlexion: 78, targetFlexion: 75 },
+    { milestone: 'Day 7', meanFlexion: 94, targetFlexion: 90 },
+    { milestone: 'Week 2', meanFlexion: 106, targetFlexion: 100 },
+    { milestone: 'Week 6', meanFlexion: 122, targetFlexion: 115 },
+    { milestone: 'Month 3', meanFlexion: 130, targetFlexion: 125 },
+  ];
+
+  const surgeonLeaderboard = [
+    { name: 'Dr. Anand Krishnamurthy', role: 'Chief of Arthroplasty', surgeries: 48, avgOTTime: '49 min', ssiRate: '0.00%', satisfaction: 4.9, activeCases: 'TKR, THR, Unicondylar' },
+    { name: 'Dr. Lakshmi Narayana', role: 'Spine & OT Lead', surgeries: 36, avgOTTime: '78 min', ssiRate: '0.00%', satisfaction: 4.9, activeCases: 'Microdiscectomy, TLIF, Cervical' },
+    { name: 'Dr. Suresh Babu', role: 'Trauma & Extremities', surgeries: 32, avgOTTime: '62 min', ssiRate: '0.00%', satisfaction: 4.8, activeCases: 'Intramedullary Nailing, Ilizarov' },
+    { name: 'Dr. Karthik Narayan', role: 'Sports Med & Arthroscopy', surgeries: 26, avgOTTime: '44 min', ssiRate: '0.00%', satisfaction: 4.9, activeCases: 'ACL Reconstruction, Rotator Cuff' },
+  ];
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-6 text-left">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="page-header"><h1 className="page-title">Analytics</h1><p className="page-subtitle">Hospital performance metrics and trends</p></div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
+          <div>
+            <h1 className="page-title flex items-center gap-2.5">
+              <span>Hospital Analytics & Clinical Intelligence</span>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200 font-mono font-bold">
+                NABH Benchmark
+              </span>
+            </h1>
+            <p className="page-subtitle">Surgical volume trajectories, clinical flexion outcomes, and revenue distribution</p>
+          </div>
+
+          {/* Time & Specialty Selectors */}
+          <div className="flex flex-wrap items-center gap-2">
+            <select
+              value={timeframe}
+              onChange={e => setTimeframe(e.target.value)}
+              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs focus:outline-hidden"
+            >
+              <option>Sep 2024</option>
+              <option>Q2 FY24</option>
+              <option>Year to Date (YTD)</option>
+            </select>
+            <select
+              value={specialtyFilter}
+              onChange={e => setSpecialtyFilter(e.target.value)}
+              className="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-700 shadow-2xs focus:outline-hidden"
+            >
+              <option value="all">All Specialties</option>
+              <option value="arthroplasty">Arthroplasty (TKR/THR)</option>
+              <option value="spine">Spine Surgery</option>
+              <option value="sports">Arthroscopy & Sports</option>
+              <option value="trauma">Trauma & Fractures</option>
+            </select>
+          </div>
+        </div>
       </motion.div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Patient Volume & Surgery Trend</h3>
-          <div className="h-64">
+
+      {/* 4 Executive KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {[
+          { label: 'Total Surgeries', value: '142', trend: '+18.4% MoM', desc: '94% OT Capacity Utilization', up: true, color: 'text-teal-700' },
+          { label: 'Mean Inpatient LOS', value: '2.4 Days', trend: '-0.7d vs Benchmark', desc: 'Target: <3.0 Days', up: true, color: 'text-blue-700' },
+          { label: 'SSI Infection Rate', value: '0.00%', trend: 'Zero Sepsis Cases', desc: 'Across 450+ Consecutive Surgeries', up: true, color: 'text-emerald-700' },
+          { label: 'Mean Flexion Gain', value: '+38.4°', trend: '122° at W6', desc: 'WOMAC Score Improved 58 → 18', up: true, color: 'text-purple-700' },
+        ].map((kpi, i) => (
+          <div key={i} className="card p-4 text-left border border-slate-200/90 shadow-2xs">
+            <p className="stat-label text-slate-500">{kpi.label}</p>
+            <p className={cn('text-2xl font-black mt-1', kpi.color)}>{kpi.value}</p>
+            <div className="flex items-center gap-1.5 mt-1.5 text-xs font-semibold text-emerald-600">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>{kpi.trend}</span>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-0.5">{kpi.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts Row 1: Surgical Trajectory & Revenue Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Trajectory */}
+        <div className="card p-5 lg:col-span-7 border border-slate-200/90 shadow-2xs text-left">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Surgical Procedure Trajectory by Specialty</h3>
+              <p className="text-xs text-slate-400">Monthly case volume breakdown across 4 hospital campuses</p>
+            </div>
+            <span className="text-[11px] font-mono font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
+              142 Surgeries (Sep)
+            </span>
+          </div>
+
+          <div className="h-68">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={analyticsData}>
-                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#9ca3af' }} />
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} />
-                <Bar dataKey="patients" fill="#818cf8" radius={[4, 4, 0, 0]} name="Patients" />
-                <Bar dataKey="surgeries" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Surgeries" />
+              <BarChart data={surgicalTrajectoryData}>
+                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 11, padding: 10 }} 
+                />
+                <Bar dataKey="jointReplacements" name="Joint Replacement (TKR/THR)" fill="#0f766e" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="arthroscopies" name="Arthroscopy & Sports" fill="#0284c7" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="traumaCases" name="Trauma Fixations" fill="#d97706" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="spineCases" name="Spine & Deformity" fill="#7c3aed" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
+
+          <div className="flex flex-wrap gap-4 pt-3 border-t border-slate-100 text-[11px] font-semibold text-slate-600 justify-center">
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#0f766e]" /> Joint Arthroplasty</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#0284c7]" /> Arthroscopy</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#d97706]" /> Trauma</span>
+            <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#7c3aed]" /> Spine</span>
+          </div>
         </div>
-        <div className="card p-5">
-          <h3 className="text-sm font-semibold text-gray-900 mb-4">Revenue Distribution</h3>
-          <div className="h-64 flex items-center justify-center">
+
+        {/* Revenue Distribution Donut */}
+        <div className="card p-5 lg:col-span-5 border border-slate-200/90 shadow-2xs text-left flex flex-col justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-slate-900">Revenue Contribution by Clinical Vertical</h3>
+            <p className="text-xs text-slate-400">Total Billed: ₹1,28,50,000 for Sep 2024</p>
+          </div>
+
+          <div className="h-56 relative flex items-center justify-center my-2">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value">
-                  {pieData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                <Pie 
+                  data={specialtyRevenueData} 
+                  cx="50%" 
+                  cy="50%" 
+                  innerRadius={65} 
+                  outerRadius={95} 
+                  paddingAngle={3} 
+                  dataKey="value"
+                >
+                  {specialtyRevenueData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #e5e7eb', fontSize: 12 }} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 11 }} 
+                  formatter={(val: any, name: any) => [`${val}%`, name]}
+                />
               </PieChart>
             </ResponsiveContainer>
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <span className="text-lg font-black text-slate-900">₹1.28 Cr</span>
+              <span className="text-[10px] text-slate-400 font-semibold uppercase">Total Revenue</span>
+            </div>
           </div>
-          <div className="flex flex-wrap gap-3 justify-center mt-2">
-            {pieData.map(d => (
-              <span key={d.name} className="flex items-center gap-1.5 text-[10px] text-gray-500">
-                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: d.color }} />{d.name} {d.value}%
-              </span>
+
+          <div className="space-y-1.5 border-t border-slate-100 pt-3 text-xs">
+            {specialtyRevenueData.map(d => (
+              <div key={d.name} className="flex items-center justify-between text-[11px]">
+                <span className="flex items-center gap-2 text-slate-700">
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                  <span className="truncate max-w-[190px]">{d.name}</span>
+                </span>
+                <span className="font-mono font-bold text-slate-900">{d.amount} ({d.value}%)</span>
+              </div>
             ))}
           </div>
         </div>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          { label: 'Patient Volume', value: '268', trend: '+7.2%', up: true },
-          { label: 'No-Show Rate', value: '4.2%', trend: '-1.1%', up: false },
-          { label: 'Follow-Up Compliance', value: '78%', trend: '+3%', up: true },
-          { label: 'OT Utilization', value: '72%', trend: '+5%', up: true },
-        ].map(m => (
-          <div key={m.label} className="card p-4">
-            <p className="stat-label">{m.label}</p>
-            <p className="stat-value mt-1">{m.value}</p>
-            <p className={cn('text-xs font-medium mt-1', m.up ? 'text-emerald-600' : 'text-red-500')}>{m.trend}</p>
+
+      {/* Charts Row 2: Implant Brands & Post-Op Recovery Curve */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Implant Brands */}
+        <div className="card p-5 lg:col-span-6 border border-slate-200/90 shadow-2xs text-left">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Implant Brand Consumption & Market Share</h3>
+              <p className="text-xs text-slate-400">142 Total Prosthetic Sets Implantation Audit</p>
+            </div>
+            <Bone className="w-4 h-4 text-teal-600" />
           </div>
-        ))}
+
+          <div className="space-y-3 pt-2">
+            {implantBrandShare.map(b => (
+              <div key={b.brand} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-slate-800">{b.brand}</span>
+                  <span className="font-mono text-slate-600">{b.units} units ({b.share}%)</span>
+                </div>
+                <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full rounded-full transition-all duration-500" 
+                    style={{ width: `${b.share}%`, backgroundColor: b.color }} 
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 p-3 rounded-xl bg-teal-50/70 border border-teal-200 text-xs text-teal-900 flex items-center justify-between">
+            <span>GS1 Barcode Traceability Compliance:</span>
+            <strong className="font-mono font-black text-emerald-800">100% Verified</strong>
+          </div>
+        </div>
+
+        {/* Knee Flexion Recovery Curve */}
+        <div className="card p-5 lg:col-span-6 border border-slate-200/90 shadow-2xs text-left">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Post-Op Knee Flexion Recovery Curve (TKR)</h3>
+              <p className="text-xs text-slate-400">Actual patient flexion vs national clinical standard</p>
+            </div>
+            <Activity className="w-4 h-4 text-purple-600" />
+          </div>
+
+          <div className="h-56">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={flexionRecoveryCurve}>
+                <XAxis dataKey="milestone" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <YAxis unit="°" domain={[40, 140]} axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#64748b' }} />
+                <Tooltip contentStyle={{ borderRadius: 12, border: '1px solid #cbd5e1', fontSize: 11 }} />
+                <Area type="monotone" dataKey="meanFlexion" name="RASA Mean ROM" stroke="#0f766e" fill="#ccfbf1" strokeWidth={2.5} />
+                <Area type="monotone" dataKey="targetFlexion" name="Clinical Target" stroke="#94a3b8" fill="transparent" strokeDasharray="3 3" strokeWidth={2} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
+            <span className="text-slate-600 font-medium">Outcome: Patients exceed national ROM targets by an avg of +7.0°</span>
+            <span className="font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+              KSS Score: 92/100
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Surgeon Performance Leaderboard */}
+      <div className="card p-5 border border-slate-200/90 shadow-2xs text-left space-y-4">
+        <div>
+          <h3 className="text-sm font-bold text-slate-900">Lead Surgeon Performance & Case Volume Leaderboard</h3>
+          <p className="text-xs text-slate-400">Monthly audit of operative duration, complications, and patient satisfaction ratings</p>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-600">
+                <th className="py-2.5 px-3">Surgeon & Specialization</th>
+                <th className="py-2.5 px-3">Cases (Sep)</th>
+                <th className="py-2.5 px-3">Avg OT Duration</th>
+                <th className="py-2.5 px-3">SSI Complications</th>
+                <th className="py-2.5 px-3">Patient Rating</th>
+                <th className="py-2.5 px-3">Active Procedures</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {surgeonLeaderboard.map((s, i) => (
+                <tr key={i} className="hover:bg-slate-50 transition-colors">
+                  <td className="py-3 px-3">
+                    <p className="font-bold text-slate-900">{s.name}</p>
+                    <p className="text-[11px] text-teal-700 font-semibold">{s.role}</p>
+                  </td>
+                  <td className="py-3 px-3 font-mono font-bold text-slate-900">{s.surgeries} surgeries</td>
+                  <td className="py-3 px-3 font-mono text-slate-700">{s.avgOTTime}</td>
+                  <td className="py-3 px-3">
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 text-[10px] font-bold">
+                      {s.ssiRate} Zero
+                    </span>
+                  </td>
+                  <td className="py-3 px-3">
+                    <span className="flex items-center gap-1 font-bold text-amber-600">
+                      <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                      <span>{s.satisfaction} / 5.0</span>
+                    </span>
+                  </td>
+                  <td className="py-3 px-3 text-slate-500 font-medium">{s.activeCases}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
@@ -2884,56 +3797,677 @@ export function ReportsPage() {
 }
 
 // ═══════════════════════════════════════════════════
-//  FINANCE
+//  FINANCE (REVENUE CYCLE, BILLING & TPA CASHLESS)
 // ═══════════════════════════════════════════════════
 export function FinancePage() {
+  const [selectedPeriod, setSelectedPeriod] = useState<string>('Sep 2024');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [paymentSuccessToast, setPaymentSuccessToast] = useState<string>('');
+  
+  // Interactive invoice selection for the Official Tax Invoice Modal
+  const [selectedInvoiceForModal, setSelectedInvoiceForModal] = useState<any | null>(null);
+
+  // Initial rich clinical invoice registry
+  const [invoicesList, setInvoicesList] = useState([
+    {
+      id: 'inv-1',
+      invoiceNumber: 'RASA-INV-2024001',
+      uhid: 'UHID-2024-8842',
+      patientName: 'Rajesh Kumar Sharma',
+      procedure: 'Bilateral TKR (Zimmer NexGen CR)',
+      category: 'joint',
+      payorType: 'Star Health Insurance (Cashless TPA)',
+      claimId: 'SH-2024-7712',
+      date: '20 Sep 2024',
+      subtotal: 250000,
+      tax: 12500,
+      discount: 0,
+      total: 262500,
+      paid: 262500,
+      balance: 0,
+      status: 'paid' as const,
+      tpaApproved: 220000,
+      coPayPaid: 42500,
+      doctor: 'Dr. Anand Krishnamurthy',
+      admissionDate: '17 Sep 2024',
+      dischargeDate: '21 Sep 2024',
+      roomType: 'Deluxe Private Suite (Bed 204)',
+      items: [
+        { desc: 'Zimmer Biomet NexGen CR Femoral & Tibial Component (Lot #ZM-8842)', cat: 'Implant', qty: 2, rate: 88000, amount: 176000 },
+        { desc: 'Laminar Airflow Modular OT Surgical Facility & Consumables', cat: 'OT Charges', qty: 1, rate: 35000, amount: 35000 },
+        { desc: 'Lead Surgeon Fee & Assistant Operative Charge', cat: 'Professional', qty: 1, rate: 45000, amount: 45000 },
+        { desc: 'Anesthesia Induction, PAC & Epidural Analgesia Monitoring', cat: 'Anesthesia', qty: 1, rate: 16500, amount: 16500 },
+        { desc: 'Inpatient Nursing Care & Sterile Surgical Dressings (4 Days)', cat: 'Nursing', qty: 4, rate: 2500, amount: 10000 },
+        { desc: 'Inpatient Pharmacy, IV Antibiotics & Clexane DVT Prophylaxis', cat: 'Pharmacy', qty: 1, rate: 17500, amount: 17500 },
+      ]
+    },
+    {
+      id: 'inv-2',
+      invoiceNumber: 'RASA-INV-2024002',
+      uhid: 'UHID-2024-8843',
+      patientName: 'Lakshmi Devi',
+      procedure: 'Left Total Hip Replacement (DePuy Corail)',
+      category: 'joint',
+      payorType: 'HDFC ERGO Health (Pre-Auth Approved)',
+      claimId: 'HE-2024-9931',
+      date: '21 Sep 2024',
+      subtotal: 250000,
+      tax: 12500,
+      discount: 0,
+      total: 262500,
+      paid: 262500,
+      balance: 0,
+      status: 'paid' as const,
+      tpaApproved: 235000,
+      coPayPaid: 27500,
+      doctor: 'Dr. Anand Krishnamurthy',
+      admissionDate: '19 Sep 2024',
+      dischargeDate: '22 Sep 2024',
+      roomType: 'Private Room (Bed 108)',
+      items: [
+        { desc: 'DePuy Synthes Corail AMT Hip Stem & Pinnacle Acetabular Cup', cat: 'Implant', qty: 1, rate: 145000, amount: 145000 },
+        { desc: 'Modular OT Facility & Fluoroscopic Image Intensifier', cat: 'OT Charges', qty: 1, rate: 32000, amount: 32000 },
+        { desc: 'Primary Arthroplasty Surgeon Operative Fee', cat: 'Professional', qty: 1, rate: 40000, amount: 40000 },
+        { desc: 'Spinal Anesthesia & PAC Critical Care Supervision', cat: 'Anesthesia', qty: 1, rate: 15000, amount: 15000 },
+        { desc: 'Nursing Station Monitoring & Inpatient Bed Charges', cat: 'Room/Bed', qty: 3, rate: 4500, amount: 13500 },
+        { desc: 'Surgical Disposables & Cryotherapy Kit', cat: 'Consumables', qty: 1, rate: 17000, amount: 17000 },
+      ]
+    },
+    {
+      id: 'inv-3',
+      invoiceNumber: 'RASA-INV-2024003',
+      uhid: 'UHID-2024-8844',
+      patientName: 'Mohammed Irfan',
+      procedure: 'Arthroscopic ACL Reconstruction + Meniscal Repair',
+      category: 'daycare',
+      payorType: 'Self-Pay / UPI NetBanking',
+      claimId: 'DIRECT-UPI-9901',
+      date: '19 Sep 2024',
+      subtotal: 185000,
+      tax: 9250,
+      discount: 0,
+      total: 194250,
+      paid: 194250,
+      balance: 0,
+      status: 'paid' as const,
+      tpaApproved: 0,
+      coPayPaid: 194250,
+      doctor: 'Dr. Karthik Narayan',
+      admissionDate: '19 Sep 2024',
+      dischargeDate: '20 Sep 2024',
+      roomType: 'Daycare Surgical Suite',
+      items: [
+        { desc: 'Arthrex FiberWire & Biosure Suture Anchors', cat: 'Implant', qty: 1, rate: 68000, amount: 68000 },
+        { desc: 'HD 4K Arthroscopy Video Tower & Shaver Console', cat: 'OT Charges', qty: 1, rate: 28000, amount: 28000 },
+        { desc: 'Sports Medicine Arthroscopic Surgeon Fee', cat: 'Professional', qty: 1, rate: 38000, amount: 38000 },
+        { desc: 'Daycare Inpatient Bed, Nursing & Physiotherapy Initiation', cat: 'Care', qty: 1, rate: 12000, amount: 12000 },
+        { desc: 'Knee Immobilizer Brace & Cold Therapy Pack', cat: 'Rehab', qty: 1, rate: 14000, amount: 14000 },
+        { desc: 'General Anesthesia & LMA Airway Management', cat: 'Anesthesia', qty: 1, rate: 34250, amount: 34250 },
+      ]
+    },
+    {
+      id: 'inv-4',
+      invoiceNumber: 'RASA-INV-2024004',
+      uhid: 'UHID-2024-8845',
+      patientName: 'Padmavathi Naidu',
+      procedure: 'OP Consultation & Bilateral Standing Radiographs',
+      category: 'opd',
+      payorType: 'Direct Cash / Card',
+      claimId: 'POS-REC-4412',
+      date: '21 Sep 2024',
+      subtotal: 7650,
+      tax: 383,
+      discount: 0,
+      total: 8033,
+      paid: 8033,
+      balance: 0,
+      status: 'paid' as const,
+      tpaApproved: 0,
+      coPayPaid: 8033,
+      doctor: 'Dr. Anand Krishnamurthy',
+      admissionDate: '21 Sep 2024',
+      dischargeDate: '21 Sep 2024',
+      roomType: 'Outpatient Cabin 101',
+      items: [
+        { desc: 'Senior Orthopedic Consultant OPD Examination & Evaluation', cat: 'Consultation', qty: 1, rate: 1200, amount: 1200 },
+        { desc: 'Digital Standing Both Knees AP & Lateral Views (XR-8845)', cat: 'Diagnostics', qty: 2, rate: 950, amount: 1900 },
+        { desc: 'Computerized Digital Goniometry & ROM Analysis', cat: 'Clinical', qty: 1, rate: 850, amount: 850 },
+        { desc: 'Intra-articular Corticosteroid & Local Anesthetic Injection', cat: 'Procedure', qty: 1, rate: 2500, amount: 2500 },
+        { desc: 'Surgical Consumables & Sterile Aspiration Pack', cat: 'Consumables', qty: 1, rate: 1583, amount: 1583 },
+      ]
+    },
+    {
+      id: 'inv-5',
+      invoiceNumber: 'RASA-INV-2024005',
+      uhid: 'UHID-2024-8846',
+      patientName: 'Venkatesh Reddy',
+      procedure: 'L4-L5 Lumbar Microdiscectomy',
+      category: 'spine',
+      payorType: 'ICICI Lombard (Pre-Auth in Process)',
+      claimId: 'ICICI-2024-6621',
+      date: '20 Sep 2024',
+      subtotal: 150000,
+      tax: 7500,
+      discount: 0,
+      total: 157500,
+      paid: 157500,
+      balance: 0,
+      status: 'paid' as const,
+      tpaApproved: 140000,
+      coPayPaid: 17500,
+      doctor: 'Dr. Lakshmi Narayana',
+      admissionDate: '18 Sep 2024',
+      dischargeDate: '21 Sep 2024',
+      roomType: 'Twin Sharing Room 302',
+      items: [
+        { desc: 'Operative Spine Microscope & High-Speed Drill Facility', cat: 'OT Charges', qty: 1, rate: 42000, amount: 42000 },
+        { desc: 'Lead Spine Surgeon Microdiscectomy Professional Fee', cat: 'Professional', qty: 1, rate: 48000, amount: 48000 },
+        { desc: 'General Endotracheal Anesthesia & Intraoperative Monitoring', cat: 'Anesthesia', qty: 1, rate: 18000, amount: 18000 },
+        { desc: 'Inpatient Bed Charges (3 Days Twin Sharing)', cat: 'Room/Bed', qty: 3, rate: 3000, amount: 9000 },
+        { desc: 'Lumbar Corset Brace & Physiotherapy Spine Rehabilitation', cat: 'Rehab', qty: 1, rate: 12500, amount: 12500 },
+        { desc: 'Sterile Spine Drape Kit & Hemostatic Matrix Agents', cat: 'Consumables', qty: 1, rate: 28000, amount: 28000 },
+      ]
+    },
+    {
+      id: 'inv-6',
+      invoiceNumber: 'RASA-INV-2024009',
+      uhid: 'UHID-2024-8850',
+      patientName: 'Ravi Teja',
+      procedure: 'Right Femur Shaft Fracture Intramedullary Nailing',
+      category: 'trauma',
+      payorType: 'CGHS Govt Scheme (Co-Pay Pending)',
+      claimId: 'CGHS-AP-2024-0012',
+      date: '18 Sep 2024',
+      subtotal: 185000,
+      tax: 9250,
+      discount: 0,
+      total: 194250,
+      paid: 150000,
+      balance: 44250,
+      status: 'partial' as const,
+      tpaApproved: 150000,
+      coPayPaid: 0,
+      doctor: 'Dr. Suresh Babu',
+      admissionDate: '16 Sep 2024',
+      dischargeDate: '20 Sep 2024',
+      roomType: 'Special Ward (Bed 112)',
+      items: [
+        { desc: 'Titanium Antegrade Interlocking Femoral Nail & Proximal Screws', cat: 'Implant', qty: 1, rate: 58000, amount: 58000 },
+        { desc: 'Trauma Fracture Table & High-Output C-Arm Fluoroscopy', cat: 'OT Charges', qty: 1, rate: 34000, amount: 34000 },
+        { desc: 'Trauma Consultant Surgical Fixation Fee', cat: 'Professional', qty: 1, rate: 38000, amount: 38000 },
+        { desc: 'Regional Spinal Anesthesia & Fluid Resuscitation', cat: 'Anesthesia', qty: 1, rate: 14500, amount: 14500 },
+        { desc: 'Inpatient Room, Nursing, and Daily Wound Dressing', cat: 'Care', qty: 4, rate: 3500, amount: 14000 },
+        { desc: 'IV Ceftriaxone, Enoxaparin DVT Prophylaxis & Blood Consumables', cat: 'Pharmacy', qty: 1, rate: 35750, amount: 35750 },
+      ]
+    },
+    {
+      id: 'inv-7',
+      invoiceNumber: 'RASA-INV-2024011',
+      uhid: 'UHID-2024-8852',
+      patientName: 'Chandra Sekhar',
+      procedure: 'Post-Op Physical Therapy Package (10 Sessions)',
+      category: 'daycare',
+      payorType: 'Patient Direct Bill (Payment Due)',
+      claimId: 'CO-PAY-DUE',
+      date: '15 Sep 2024',
+      subtotal: 15000,
+      tax: 750,
+      discount: 0,
+      total: 15750,
+      paid: 0,
+      balance: 15750,
+      status: 'overdue' as const,
+      tpaApproved: 0,
+      coPayPaid: 0,
+      doctor: 'Arun Kumar PT',
+      admissionDate: '15 Sep 2024',
+      dischargeDate: '15 Sep 2024',
+      roomType: 'Rehab Center Suite',
+      items: [
+        { desc: 'Advanced Continuous Passive Motion (CPM) Machine Sessions (10 Days)', cat: 'Physio', qty: 10, rate: 650, amount: 6500 },
+        { desc: 'Gait Training with Bilateral Forearm Support & Stairs Training', cat: 'Physio', qty: 10, rate: 450, amount: 4500 },
+        { desc: 'Therapeutic Ultrasound & Cryo-compression Therapy', cat: 'Modalities', qty: 10, rate: 400, amount: 4000 },
+        { desc: 'Clinical Goniometric Outcome Documentation & Progress Charting', cat: 'Consult', qty: 1, rate: 750, amount: 750 },
+      ]
+    },
+  ]);
+
+  const filteredInvoices = invoicesList.filter(inv => {
+    const matchesCat = selectedCategory === 'all' || 
+      (selectedCategory === 'joint' && inv.category === 'joint') ||
+      (selectedCategory === 'spine' && inv.category === 'spine') ||
+      (selectedCategory === 'trauma' && inv.category === 'trauma') ||
+      (selectedCategory === 'daycare' && (inv.category === 'daycare' || inv.category === 'opd')) ||
+      (selectedCategory === 'pending' && (inv.status === 'partial' || inv.status === 'overdue'));
+
+    const matchesSearch = searchQuery === '' || 
+      inv.patientName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      inv.invoiceNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      inv.uhid.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      inv.procedure.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesCat && matchesSearch;
+  });
+
+  const handleRecordPayment = (invId: string) => {
+    setInvoicesList(prev => prev.map(inv => {
+      if (inv.id === invId) {
+        return {
+          ...inv,
+          paid: inv.total,
+          balance: 0,
+          status: 'paid' as const,
+        };
+      }
+      return inv;
+    }));
+
+    if (selectedInvoiceForModal && selectedInvoiceForModal.id === invId) {
+      setSelectedInvoiceForModal({
+        ...selectedInvoiceForModal,
+        paid: selectedInvoiceForModal.total,
+        balance: 0,
+        status: 'paid',
+      });
+    }
+
+    setPaymentSuccessToast(`Payment reconciled for Invoice ${selectedInvoiceForModal?.invoiceNumber || invId}. Receipt updated.`);
+    setTimeout(() => setPaymentSuccessToast(''), 3500);
+  };
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-6 text-left">
+      {/* Header */}
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="page-header"><h1 className="page-title">Finance</h1><p className="page-subtitle">Revenue, billing, and payment management</p></div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 page-header">
+          <div>
+            <h1 className="page-title flex items-center gap-2.5">
+              <span>Hospital Finance & Revenue Cycle</span>
+              <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-mono font-bold">
+                IRDAI & GST Compliant
+              </span>
+            </h1>
+            <p className="page-subtitle">Itemized tax invoices, cashless TPA insurance processing, and realization tracking</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <select 
+              value={selectedPeriod}
+              onChange={e => setSelectedPeriod(e.target.value)}
+              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-bold text-slate-700 shadow-2xs focus:outline-hidden"
+            >
+              <option>Sep 2024</option>
+              <option>Q2 FY24</option>
+              <option>Fiscal Year 2024-25</option>
+            </select>
+            <button 
+              onClick={() => {
+                setPaymentSuccessToast('Exporting GST B2B & B2C Tax Schedule (GSTR-1 format)...');
+                setTimeout(() => setPaymentSuccessToast(''), 3000);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-xs font-bold text-slate-700 shadow-2xs flex items-center gap-1.5 transition-all cursor-pointer"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Export Tally / GST</span>
+            </button>
+          </div>
+        </div>
       </motion.div>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+
+      {/* 4 Executive Financial KPI Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Monthly Revenue', value: formatCurrency(12850000), color: 'text-emerald-600' },
-          { label: 'Collected', value: formatCurrency(11200000), color: 'text-blue-600' },
-          { label: 'Pending', value: formatCurrency(1650000), color: 'text-amber-600' },
-          { label: 'Overdue', value: formatCurrency(450000), color: 'text-red-600' },
-        ].map(s => (
-          <div key={s.label} className="card p-4">
-            <p className="stat-label">{s.label}</p>
-            <p className={cn('text-xl font-bold mt-1', s.color)}>{s.value}</p>
+          { label: 'Gross Billed Revenue', value: formatCurrency(12850000), trend: '+14.2% MoM', sub: '₹4.28 Lakhs daily average', color: 'text-emerald-700' },
+          { label: 'Realized Collections', value: formatCurrency(11200000), trend: '87.2% Realization', sub: 'Direct Bank, POS & UPI', color: 'text-blue-700' },
+          { label: 'TPA Cashless in Pipeline', value: formatCurrency(1650000), trend: '14 Active Claims', sub: 'Star Health, HDFC, ICICI, CGHS', color: 'text-amber-700' },
+          { label: 'Overdue Co-Pay Balance', value: formatCurrency(450000), trend: '4 Action Accounts', sub: 'Patient Co-Pay Recovery Alert', color: 'text-rose-700' },
+        ].map((s, i) => (
+          <div key={i} className="card p-4 text-left border border-slate-200/90 shadow-2xs">
+            <p className="stat-label text-slate-500">{s.label}</p>
+            <p className={cn('text-2xl font-black mt-1', s.color)}>{s.value}</p>
+            <div className="flex items-center gap-1.5 mt-1 text-xs font-semibold text-emerald-600">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>{s.trend}</span>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-0.5">{s.sub}</p>
           </div>
         ))}
       </div>
-      <div className="card overflow-hidden">
-        <table className="w-full">
-          <thead><tr className="bg-surface-50 border-b border-surface-200">
-            <th className="table-cell table-header text-left">Invoice</th>
-            <th className="table-cell table-header text-left">Patient</th>
-            <th className="table-cell table-header text-right">Total</th>
-            <th className="table-cell table-header text-right hidden md:table-cell">Paid</th>
-            <th className="table-cell table-header text-right hidden md:table-cell">Balance</th>
-            <th className="table-cell table-header text-left">Status</th>
-          </tr></thead>
-          <tbody>
-            {mockInvoices.map(inv => (
-              <tr key={inv.id} className="table-row">
-                <td className="table-cell font-mono text-xs text-gray-700">{inv.invoiceNumber}</td>
-                <td className="table-cell text-sm font-medium text-gray-900">{inv.patientName}</td>
-                <td className="table-cell text-right text-sm font-medium text-gray-900">{formatCurrency(inv.total)}</td>
-                <td className="table-cell text-right text-xs text-gray-600 hidden md:table-cell">{formatCurrency(inv.paid)}</td>
-                <td className="table-cell text-right text-xs hidden md:table-cell"><span className={cn(inv.balance > 0 ? 'text-red-600 font-medium' : 'text-gray-400')}>{formatCurrency(inv.balance)}</span></td>
-                <td className="table-cell"><span className={cn('badge text-[10px]',
-                  inv.status === 'paid' ? 'bg-emerald-100 text-emerald-700' :
-                  inv.status === 'overdue' ? 'bg-red-100 text-red-700' :
-                  inv.status === 'partial' ? 'bg-amber-100 text-amber-700' :
-                  'bg-blue-100 text-blue-700'
-                )}>{inv.status}</span></td>
+
+      {/* TPA Cashless Settlement Pipeline Ribbon */}
+      <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-2.5 text-left">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-teal-600" />
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+              TPA Cashless Insurance Processing Pipeline
+            </h3>
+          </div>
+          <span className="text-[10px] font-mono font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+            IRDAI ROHINI Code: 89004412
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 text-xs">
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] text-slate-500 block font-semibold">1. Pre-Auth Cleared</span>
+            <span className="font-bold text-slate-900 text-sm">₹7,20,000</span>
+            <span className="text-[10px] text-teal-700 block">6 Upcoming Surgeries</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] text-slate-500 block font-semibold">2. Operative Docs Submitted</span>
+            <span className="font-bold text-slate-900 text-sm">₹5,50,000</span>
+            <span className="text-[10px] text-amber-700 block">5 Claims Under Review</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200">
+            <span className="text-[10px] text-slate-500 block font-semibold">3. Final Settlement Audit</span>
+            <span className="font-bold text-slate-900 text-sm">₹3,80,000</span>
+            <span className="text-[10px] text-blue-700 block">3 Accounts Discharged</span>
+          </div>
+          <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200">
+            <span className="text-[10px] text-emerald-800 block font-semibold">4. Settled & Reconciled</span>
+            <span className="font-bold text-emerald-950 text-sm">₹1,12,00,000</span>
+            <span className="text-[10px] text-emerald-700 block">98.7% First-Pass Approval</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Filter Tabs & Search */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Category Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+          {[
+            { id: 'all', label: 'All Invoices' },
+            { id: 'joint', label: 'Arthroplasty (TKR/THR)' },
+            { id: 'spine', label: 'Spine Surgeries' },
+            { id: 'trauma', label: 'Trauma & Fractures' },
+            { id: 'daycare', label: 'Daycare & OPD' },
+            { id: 'pending', label: 'Pending Co-Pay' },
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedCategory(tab.id)}
+              className={cn(
+                'px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap cursor-pointer',
+                selectedCategory === tab.id
+                  ? 'bg-teal-700 text-white shadow-2xs'
+                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'
+              )}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <div className="relative min-w-[260px]">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder="Search patient, invoice #, or procedure..."
+            className="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:outline-hidden focus:border-teal-500 shadow-2xs"
+          />
+        </div>
+      </div>
+
+      {/* Toast */}
+      {paymentSuccessToast && (
+        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+          <span>{paymentSuccessToast}</span>
+        </div>
+      )}
+
+      {/* Financial Table */}
+      <div className="card overflow-hidden border border-slate-200/90 shadow-xs">
+        <table className="w-full text-left">
+          <thead>
+            <tr className="bg-slate-50/80 border-b border-slate-200/90 text-xs font-bold text-slate-600">
+              <th className="py-3 px-4">Invoice # & Date</th>
+              <th className="py-3 px-3">Patient & Procedure</th>
+              <th className="py-3 px-3">Payor / TPA</th>
+              <th className="py-3 px-3 text-right">Total</th>
+              <th className="py-3 px-3 text-right">Paid</th>
+              <th className="py-3 px-3 text-right">Balance</th>
+              <th className="py-3 px-3 text-center">Status</th>
+              <th className="py-3 px-4 text-right">Action</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 text-xs">
+            {filteredInvoices.map((inv) => (
+              <tr 
+                key={inv.id}
+                onClick={() => setSelectedInvoiceForModal(inv)}
+                className="hover:bg-teal-50/30 transition-colors cursor-pointer"
+              >
+                <td className="py-3 px-4">
+                  <p className="font-mono font-bold text-slate-900">{inv.invoiceNumber}</p>
+                  <p className="text-[11px] text-slate-400">{inv.date}</p>
+                </td>
+                <td className="py-3 px-3">
+                  <p className="font-bold text-slate-900">{inv.patientName}</p>
+                  <p className="text-[11px] font-semibold text-teal-700">{inv.procedure}</p>
+                  <p className="text-[10px] font-mono text-slate-400">{inv.uhid}</p>
+                </td>
+                <td className="py-3 px-3">
+                  <span className="text-slate-800 font-medium block">{inv.payorType}</span>
+                  <span className="text-[10px] font-mono text-slate-400">{inv.claimId}</span>
+                </td>
+                <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 text-sm">
+                  {formatCurrency(inv.total)}
+                </td>
+                <td className="py-3 px-3 text-right font-mono text-slate-600">
+                  {formatCurrency(inv.paid)}
+                </td>
+                <td className="py-3 px-3 text-right font-mono">
+                  <span className={cn(inv.balance > 0 ? 'text-rose-600 font-black' : 'text-slate-400')}>
+                    {formatCurrency(inv.balance)}
+                  </span>
+                </td>
+                <td className="py-3 px-3 text-center">
+                  <span className={cn(
+                    'px-2.5 py-1 rounded-full text-[10px] font-bold inline-flex items-center gap-1 uppercase tracking-wider',
+                    inv.status === 'paid' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' :
+                    inv.status === 'partial' ? 'bg-amber-50 text-amber-800 border border-amber-200' :
+                    'bg-rose-50 text-rose-800 border border-rose-200'
+                  )}>
+                    {inv.status}
+                  </span>
+                </td>
+                <td className="py-3 px-4 text-right">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedInvoiceForModal(inv);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-xs border border-teal-200 transition-colors cursor-pointer"
+                  >
+                    View Tax Invoice
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* Official Tax Invoice Lightbox Modal */}
+      {selectedInvoiceForModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="w-full max-w-2xl bg-white rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-left border border-slate-200 my-8">
+            
+            {/* Modal Actions Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <span className="px-3 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-[10px] font-mono font-bold uppercase tracking-wider">
+                OFFICIAL HOSPITAL TAX INVOICE
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => window.print()}
+                  className="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setPaymentSuccessToast(`WhatsApp Tax Invoice PDF dispatched to ${selectedInvoiceForModal.patientName}`);
+                    setTimeout(() => setPaymentSuccessToast(''), 3000);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  <span>Send WhatsApp</span>
+                </button>
+                <button
+                  onClick={() => setSelectedInvoiceForModal(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Hospital Official Letterhead */}
+            <div className="flex items-start justify-between border-b-2 border-teal-800/20 pb-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-teal-700 text-white font-black flex items-center justify-center text-sm">
+                    R
+                  </div>
+                  <h2 className="text-lg font-black tracking-tight text-slate-900">
+                    RASA INSTITUTE OF ORTHOPAEDICS & TRAUMA
+                  </h2>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Campus: Road No. 2, Banjara Hills, Hyderabad - 500034 · Tel: +91 40 6800 2000
+                </p>
+                <p className="text-[10px] font-mono text-slate-500">
+                  GSTIN: <strong>36AAACR9982Q1Z5</strong> · NABH Reg: <strong>NABH-2024-ORTHO-0912</strong>
+                </p>
+              </div>
+              <div className="text-right space-y-0.5">
+                <span className="text-[10px] text-slate-400 block font-mono">TAX INVOICE NO</span>
+                <span className="font-mono font-black text-teal-900 text-sm">{selectedInvoiceForModal.invoiceNumber}</span>
+                <span className="text-[11px] text-slate-500 block">Date: {selectedInvoiceForModal.date}</span>
+              </div>
+            </div>
+
+            {/* Patient Demographics & Admission Metadata */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs">
+              <div>
+                <span className="text-[10px] text-slate-400 block">Patient Name:</span>
+                <strong className="text-slate-900 block">{selectedInvoiceForModal.patientName}</strong>
+                <span className="text-[10px] font-mono text-slate-500">{selectedInvoiceForModal.uhid}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 block">Primary Surgeon:</span>
+                <strong className="text-slate-900 block">{selectedInvoiceForModal.doctor}</strong>
+                <span className="text-[10px] text-teal-700">{selectedInvoiceForModal.roomType}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 block">Procedure Performed:</span>
+                <strong className="text-slate-900 block truncate">{selectedInvoiceForModal.procedure}</strong>
+                <span className="text-[10px] text-slate-500">Admit: {selectedInvoiceForModal.admissionDate}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-slate-400 block">Payor / Claim ID:</span>
+                <strong className="text-slate-900 block truncate">{selectedInvoiceForModal.payorType}</strong>
+                <span className="text-[10px] font-mono text-teal-800">{selectedInvoiceForModal.claimId}</span>
+              </div>
+            </div>
+
+            {/* Itemized Clinical Billing Breakdown */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Itemized Line-Item Breakdown</h4>
+              <div className="border border-slate-200 rounded-xl overflow-hidden text-xs">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 font-bold text-slate-600">
+                      <th className="py-2 px-3">Service / Implant Description</th>
+                      <th className="py-2 px-2">Category</th>
+                      <th className="py-2 px-2 text-center">Qty</th>
+                      <th className="py-2 px-3 text-right">Unit Rate</th>
+                      <th className="py-2 px-3 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {selectedInvoiceForModal.items?.map((item: any, i: number) => (
+                      <tr key={i}>
+                        <td className="py-2 px-3 text-slate-900 font-medium">{item.desc}</td>
+                        <td className="py-2 px-2 text-slate-500 text-[11px]">{item.cat}</td>
+                        <td className="py-2 px-2 text-center font-mono">{item.qty}</td>
+                        <td className="py-2 px-3 text-right font-mono text-slate-600">{formatCurrency(item.rate)}</td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">{formatCurrency(item.amount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Totals & Tax Calculation */}
+            <div className="flex flex-col sm:flex-row items-end justify-between gap-4 pt-2 border-t border-slate-200">
+              <div className="space-y-1 text-xs text-slate-500">
+                <p>Tax Exemption: Healthcare services exempted under GST notification 12/2017.</p>
+                <p>Implant GST (5% / 12%): Included in prosthetic component pricing.</p>
+                {selectedInvoiceForModal.tpaApproved > 0 && (
+                  <p className="text-emerald-700 font-bold">
+                    TPA Pre-Auth Deducted: {formatCurrency(selectedInvoiceForModal.tpaApproved)}
+                  </p>
+                )}
+              </div>
+
+              <div className="w-full sm:w-64 space-y-1.5 text-xs">
+                <div className="flex justify-between text-slate-600">
+                  <span>Subtotal:</span>
+                  <span className="font-mono">{formatCurrency(selectedInvoiceForModal.subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-slate-600">
+                  <span>Hospital Tax (GST 5%):</span>
+                  <span className="font-mono">{formatCurrency(selectedInvoiceForModal.tax)}</span>
+                </div>
+                <div className="flex justify-between text-slate-900 font-bold border-t border-slate-200 pt-1.5 text-sm">
+                  <span>Total Tax Invoice:</span>
+                  <span className="font-mono font-black text-teal-900">{formatCurrency(selectedInvoiceForModal.total)}</span>
+                </div>
+                <div className="flex justify-between text-emerald-700 font-bold">
+                  <span>Amount Paid:</span>
+                  <span className="font-mono">{formatCurrency(selectedInvoiceForModal.paid)}</span>
+                </div>
+                <div className="flex justify-between text-rose-700 font-black border-t border-slate-100 pt-1">
+                  <span>Patient Co-Pay Balance:</span>
+                  <span className="font-mono">{formatCurrency(selectedInvoiceForModal.balance)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Bottom Actions */}
+            <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+              <span className="text-[10px] text-slate-400">
+                Authorized Signature: Hospital Accounts & Billing Desk
+              </span>
+              {selectedInvoiceForModal.balance > 0 ? (
+                <button
+                  onClick={() => handleRecordPayment(selectedInvoiceForModal.id)}
+                  className="px-5 py-2.5 rounded-xl bg-teal-700 hover:bg-teal-800 text-white font-black text-xs shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Collect Co-Pay ({formatCurrency(selectedInvoiceForModal.balance)})</span>
+                </button>
+              ) : (
+                <div className="flex items-center gap-1.5 text-emerald-700 font-black text-xs bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-200">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Invoice Fully Paid & Settled</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

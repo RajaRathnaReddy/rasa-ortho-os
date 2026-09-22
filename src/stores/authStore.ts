@@ -47,7 +47,13 @@ export const useAuthStore = create<AuthState>((set) => ({
     const cleanUser = username.trim().toLowerCase();
     const cleanPass = pass.trim();
 
-    if (cleanUser === 'rasa' && cleanPass === 'rasatech007') {
+    // Authorized usernames: 'rasa', 'admin', 'raja', 'dr.anand', 'doctor', 'surgeon', or any staff ID
+    const validUsers = ['rasa', 'admin', 'raja', 'rajarathna', 'dr.anand', 'doctor', 'surgeon', 'nurse', 'admin@rasaortho.com'];
+    
+    // Master hospital passcodes issued by Raja Rathna Reddy
+    const validPasscodes = ['rasatech007', 'RasaTech007', 'rasa@2026', 'ortho2026'];
+
+    if ((validUsers.includes(cleanUser) || cleanUser.length >= 3) && validPasscodes.includes(cleanPass)) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('rasa_ortho_session', 'true');
       }
@@ -61,7 +67,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
     return {
       success: false,
-      message: 'Invalid credentials! Please use User ID: Rasa and Password: rasatech007',
+      message: 'Access Denied: Invalid Hospital Security Passcode. Only personnel with an authorized passcode issued by Raja Rathna Reddy can log in.',
     };
   },
   logout: () => {

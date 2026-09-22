@@ -1,4 +1,5 @@
-import { Search, Bell, Plus, Menu, Building2, ChevronDown, LogOut, User, Shield, Stethoscope, Syringe, HeartPulse, Dumbbell, MonitorSmartphone, Package, IndianRupee } from 'lucide-react';
+import { Search, Bell, Plus, Menu, Building2, ChevronDown, LogOut, User, Shield, Stethoscope, Syringe, HeartPulse, Dumbbell, MonitorSmartphone, Package, IndianRupee, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/cn';
 import { useUIStore } from '../../stores/uiStore';
 import { useAuthStore } from '../../stores/authStore';
@@ -19,6 +20,7 @@ const roleOptions: { role: UserRole; label: string; name: string; icon: React.Co
 ];
 
 export function TopNav() {
+  const navigate = useNavigate();
   const { toggleCommandPalette, toggleNotificationPanel, toggleQuickCreate, unreadCount, setSidebarMobileOpen } = useUIStore();
   const { user, currentBranch, setBranch, logout, login } = useAuthStore();
   const [branchOpen, setBranchOpen] = useState(false);
@@ -220,11 +222,18 @@ export function TopNav() {
                 </span>
               </div>
               <button
-                onClick={() => { logout(); setProfileOpen(false); }}
-                className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium"
+                onClick={() => { setProfileOpen(false); navigate('/'); }}
+                className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-surface-50 text-slate-700 flex items-center gap-2 font-medium"
+              >
+                <Globe className="w-4 h-4 text-teal-600" />
+                View Public Overview Page
+              </button>
+              <button
+                onClick={() => { logout(); setProfileOpen(false); navigate('/login'); }}
+                className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium cursor-pointer"
               >
                 <LogOut className="w-4 h-4" />
-                Sign Out / Switch User
+                Sign Out / Lock Portal
               </button>
             </div>
           )}
