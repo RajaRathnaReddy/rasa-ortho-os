@@ -343,7 +343,7 @@ export function ReceptionPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
         {/* Left: Comprehensive Walk-in Clinical OP Intake Form (Shown in Split View) */}
         {viewMode === 'split' && (
-          <div className="lg:col-span-4 xl:col-span-4 card p-4 sm:p-5 space-y-4">
+          <div className="lg:col-span-5 xl:col-span-4 card p-4 sm:p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-surface-100 pb-3">
             <div className="flex items-center gap-2">
               <Ticket className="w-4 h-4 text-primary-600" />
@@ -651,7 +651,7 @@ export function ReceptionPage() {
         )}
 
         {/* Right: Live Queue Board + Doctor Brief Preview */}
-        <div className={cn(viewMode === 'split' ? 'lg:col-span-8 xl:col-span-8' : 'col-span-12', 'space-y-4')}>
+        <div className={cn(viewMode === 'split' ? 'lg:col-span-7 xl:col-span-8' : 'col-span-12', 'space-y-4')}>
           {/* Active Doctor Triage Brief Preview (If Selected) */}
           {selectedTokenForPreview && (
             <div className="space-y-2">
@@ -701,21 +701,29 @@ export function ReceptionPage() {
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left">
+              <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-white border-b border-surface-200 text-xs">
-                    <th className="px-2.5 py-2.5 font-bold text-slate-700 w-14 text-center">Token</th>
+                  <tr className="bg-slate-50 border-b border-surface-200 text-xs">
+                    <th className="px-2.5 py-2.5 font-bold text-slate-700 w-16 text-center">Token</th>
                     <th className="px-2.5 py-2.5 font-bold text-slate-700 min-w-[130px]">Patient & Joint</th>
                     <th className="px-2.5 py-2.5 font-bold text-slate-700 w-28">Doctor / Cabin</th>
-                    <th className="px-2.5 py-2.5 font-bold text-slate-700 w-24">Pain & Red Flags</th>
-                    <th className="px-2.5 py-2.5 font-bold text-slate-700 w-20">Billing</th>
-                    <th className="px-2.5 py-2.5 font-bold text-slate-700 w-20 text-center">Status</th>
-                    <th className="px-2.5 py-2.5 font-bold text-slate-700 min-w-[160px] text-right">Doctor & Actions</th>
+                    <th className="px-2.5 py-2.5 font-bold text-slate-700 w-32">Pain & Red Flags</th>
+                    <th className="px-2.5 py-2.5 font-bold text-slate-700 w-24">Billing</th>
+                    <th className="px-2.5 py-2.5 font-bold text-slate-700 w-24 text-center">Status</th>
+                    <th className="px-2.5 py-2.5 font-bold text-slate-700 min-w-[175px] text-right">Doctor & Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-surface-100">
+                <tbody className="divide-y divide-surface-100 bg-white">
                   {tokens.map(t => {
                     const isSelected = selectedTokenForPreview?.token === t.token;
+                    // Clean extraction of billing amount and mode
+                    const amountMatch = t.billingAmount.match(/(₹[\d,]+(?:\.\d+L)?)/);
+                    const billingAmountClean = amountMatch ? amountMatch[1] : t.billingAmount;
+                    const modeMatch = t.billingAmount.match(/\(([^)]+)\)/);
+                    const billingModeClean = modeMatch
+                      ? modeMatch[1]
+                      : t.billingStatus === 'paid' ? 'Paid' : t.billingStatus === 'tpa' ? 'TPA Cashless' : 'Pending';
+
                     return (
                       <tr
                         key={t.token}
@@ -724,104 +732,118 @@ export function ReceptionPage() {
                           'transition-colors cursor-pointer group',
                           isSelected
                             ? 'bg-teal-50/90 border-l-4 border-teal-600 shadow-2xs'
-                            : 'hover:bg-teal-50/30'
+                            : 'hover:bg-slate-50/80'
                         )}
                       >
-                        <td className="px-2.5 py-2.5 font-mono font-black text-xs text-teal-800 text-center">
+                        <td className="px-2.5 py-2.5 align-middle text-center">
                           <span className={cn(
-                            'px-1.5 py-0.5 rounded-md border text-xs font-bold inline-block',
-                            isSelected ? 'bg-teal-600 text-white border-teal-600' : 'bg-teal-50 border-teal-200 text-teal-800'
+                            'inline-flex items-center justify-center font-mono font-bold text-xs px-2 py-0.5 rounded-md border tracking-wide min-w-[50px]',
+                            isSelected ? 'bg-teal-700 text-white border-teal-700 shadow-2xs' : 'bg-slate-100 text-slate-800 border-slate-200'
                           )}>
                             {t.token}
                           </span>
                         </td>
-                        <td className="px-2.5 py-2.5">
+                        <td className="px-2.5 py-2.5 align-middle">
                           <div className="flex items-center gap-1.5 flex-wrap">
-                            <p className="font-bold text-xs text-gray-900 group-hover:text-teal-700 transition-colors">
+                            <span className="font-bold text-xs text-slate-900 group-hover:text-teal-700 transition-colors">
                               {t.patientName}
-                            </p>
+                            </span>
                             {t.isNewPatient ? (
-                              <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 border border-emerald-300 px-1.5 py-0.2 rounded-full flex items-center gap-1 shadow-2xs">
+                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full flex items-center gap-1">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                                NEW
+                                New
                               </span>
                             ) : (
-                              <span className="text-[9px] font-bold text-amber-800 bg-amber-100 border border-amber-300 px-1.5 py-0.2 rounded-full flex items-center gap-0.5 shadow-2xs">
-                                📜 {t.pastVisitsCount}V
+                              <span className="text-[10px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded-full">
+                                {t.pastVisitsCount}V
                               </span>
                             )}
                           </div>
-                          <p className="text-[10px] text-teal-700 font-bold mt-0.5 truncate max-w-44">{t.primaryJoint}</p>
+                          <p className="text-[11px] text-teal-700 font-semibold mt-0.5 truncate max-w-40">{t.primaryJoint}</p>
                         </td>
-                        <td className="px-2.5 py-2.5">
-                          <span className="text-xs font-bold text-gray-800 block">{t.cabin}</span>
-                          <span className="text-[10px] text-gray-500 font-medium truncate max-w-32 block">{t.doctorAssigned.split(' ')[1]}</span>
+                        <td className="px-2.5 py-2.5 align-middle">
+                          <span className="text-xs font-bold text-slate-800 block">{t.cabin}</span>
+                          <span className="text-[11px] text-slate-500 font-medium truncate max-w-28 block">
+                            {t.doctorAssigned.split(' ')[0]} {t.doctorAssigned.split(' ')[1]}
+                          </span>
                         </td>
-                        <td className="px-2.5 py-2.5">
-                          <span className="badge bg-rose-50 text-rose-700 border border-rose-200 text-[10px] font-bold">
+                        <td className="px-2.5 py-2.5 align-middle">
+                          <span className={cn(
+                            'inline-flex items-center text-[10px] font-bold px-1.5 py-0.2 rounded border',
+                            t.painScore >= 8 ? 'bg-rose-50 text-rose-700 border-rose-200' :
+                            t.painScore >= 5 ? 'bg-amber-50 text-amber-700 border-amber-200' :
+                            'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          )}>
                             VAS {t.painScore}/10
                           </span>
-                          {t.criticalAlerts && t.criticalAlerts.length > 0 && (
-                            <span className="text-[9px] text-rose-600 block mt-0.5 truncate max-w-28 font-semibold">
-                              {t.criticalAlerts[0]}
+                          {t.criticalAlerts && t.criticalAlerts.length > 0 ? (
+                            <span className="text-[10px] text-rose-600 block mt-0.5 truncate max-w-32 font-medium" title={t.criticalAlerts[0]}>
+                              {t.criticalAlerts[0].replace('⚠️ ', '')}
                             </span>
+                          ) : (
+                            <span className="text-[10px] text-slate-400 block mt-0.5 font-normal">None flagged</span>
                           )}
                         </td>
-                        <td className="px-2.5 py-2.5">
-                          <span className={cn(
-                            'badge text-[10px] font-bold',
-                            t.billingStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' :
-                            t.billingStatus === 'pending' ? 'bg-amber-100 text-amber-800' :
-                            'bg-purple-100 text-purple-800'
-                          )}>
-                            {t.billingAmount}
-                          </span>
+                        <td className="px-2.5 py-2.5 align-middle">
+                          <div className="flex flex-col">
+                            <span className="font-bold text-xs text-slate-900 tracking-tight">{billingAmountClean}</span>
+                            <span className={cn(
+                              'text-[9px] font-semibold px-1.5 py-0.2 rounded border w-fit mt-0.5 whitespace-nowrap',
+                              t.billingStatus === 'paid' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                              t.billingStatus === 'tpa' ? 'bg-purple-50 text-purple-700 border-purple-200' :
+                              'bg-amber-50 text-amber-700 border-amber-200'
+                            )}>
+                              {billingModeClean}
+                            </span>
+                          </div>
                         </td>
-                        <td className="px-2.5 py-2.5 text-center">
+                        <td className="px-2.5 py-2.5 align-middle text-center">
                           <span className={cn(
-                            'badge text-[10px] font-bold',
-                            t.status === 'In Cabin' ? 'bg-emerald-100 text-emerald-800 animate-pulse' :
-                            t.status === 'Waiting' ? 'bg-amber-100 text-amber-800' :
-                            'bg-surface-100 text-gray-700'
+                            'inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-bold border min-w-[70px]',
+                            t.status === 'In Cabin' ? 'bg-emerald-50 text-emerald-700 border-emerald-200 shadow-2xs' :
+                            t.status === 'Waiting' ? 'bg-amber-50 text-amber-800 border-amber-200' :
+                            t.status === 'Arrived' ? 'bg-sky-50 text-sky-700 border-sky-200' :
+                            'bg-slate-100 text-slate-700 border-slate-200'
                           )}>
+                            {t.status === 'In Cabin' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1" />}
                             {t.status}
                           </span>
                         </td>
-                        <td className="px-2.5 py-2.5 text-right" onClick={(e) => e.stopPropagation()}>
-                          <div className="flex items-center justify-end gap-1 flex-nowrap">
+                        <td className="px-2.5 py-2.5 align-middle text-right" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-end gap-1">
+                            {t.status === 'Waiting' && (
+                              <button
+                                type="button"
+                                onClick={() => handleStatusChange(t.token, 'In Cabin')}
+                                className="px-2 py-1 rounded-md bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-[10.5px] font-bold border border-emerald-200 transition-all whitespace-nowrap cursor-pointer shadow-2xs"
+                                title="Call patient In Cabin"
+                              >
+                                Call In
+                              </button>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedTokenForPreview(isSelected ? null : t)}
+                              className={cn(
+                                'px-2 py-1 rounded-md text-[10.5px] font-bold border transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shadow-2xs',
+                                isSelected
+                                  ? 'bg-amber-50 text-amber-800 border-amber-300'
+                                  : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                              )}
+                              title="Preview OP Triage Brief right here"
+                            >
+                              <Eye className="w-3 h-3 text-slate-500" />
+                              <span>{isSelected ? 'Close' : 'Brief'}</span>
+                            </button>
                             <button
                               type="button"
                               onClick={() => navigate(`/doctors?token=${t.token}`)}
-                              className="px-2 py-1 rounded-lg bg-teal-600 hover:bg-teal-700 text-white text-[11px] font-bold shadow-2xs flex items-center gap-1 transition-all hover:scale-105 active:scale-95 whitespace-nowrap cursor-pointer"
+                              className="px-2 py-1 rounded-md bg-teal-600 hover:bg-teal-700 text-white text-[10.5px] font-bold shadow-2xs flex items-center gap-1 transition-all cursor-pointer whitespace-nowrap"
                               title="Open patient directly in Doctor Clinical Pad"
                             >
                               <Stethoscope className="w-3 h-3" />
                               <span>Doctor</span>
                             </button>
-                            <button
-                              type="button"
-                              onClick={() => setSelectedTokenForPreview(isSelected ? null : t)}
-                              className={cn(
-                                'px-2 py-1 rounded-lg text-[11px] font-bold border transition-all whitespace-nowrap cursor-pointer flex items-center gap-1 shadow-2xs',
-                                isSelected
-                                  ? 'bg-amber-100 text-amber-900 border-amber-300'
-                                  : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
-                              )}
-                              title="Preview OP Triage Brief right here"
-                            >
-                              <Eye className="w-3 h-3 text-teal-600" />
-                              <span>{isSelected ? 'Close' : 'Brief'}</span>
-                            </button>
-                            {t.status === 'Waiting' && (
-                              <button
-                                type="button"
-                                onClick={() => handleStatusChange(t.token, 'In Cabin')}
-                                className="px-1.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-300 transition-all whitespace-nowrap cursor-pointer"
-                                title="Mark patient In Cabin"
-                              >
-                                Call In
-                              </button>
-                            )}
                           </div>
                         </td>
                       </tr>
@@ -1363,51 +1385,292 @@ export function DiagnosticsPage() {
 //  OT / THEATRE
 // ═══════════════════════════════════════════════════
 export function OTTheatrePage() {
-  const todaySurgeries = mockSurgeries.slice(0, 6);
+  const [viewMode, setViewMode] = useState<'by_theatre' | 'timeline'>('by_theatre');
+  const [selectedOtFilter, setSelectedOtFilter] = useState<string>('all');
+
+  // Realistic today surgeries across all 3 OTs (9 cases)
+  const todaySurgeries = mockSurgeries.slice(0, 9).sort((a, b) => {
+    return (a.startTime || '').localeCompare(b.startTime || '');
+  });
+
+  const filteredSurgeries = selectedOtFilter === 'all'
+    ? todaySurgeries
+    : todaySurgeries.filter(s => s.otId === selectedOtFilter);
+
   return (
-    <div className="page-container">
+    <div className="page-container space-y-6">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="page-header"><h1 className="page-title">OT / Theatre Management</h1><p className="page-subtitle">{mockOTs.length} operating theatres</p></div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2.5 mb-1">
+              <h1 className="page-title text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                Operating Theatre & Surgical Command
+              </h1>
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Live OT Status
+              </span>
+            </div>
+            <p className="page-subtitle text-xs sm:text-sm text-slate-500">
+              3 Ultra-Clean Laminar Flow Theatres · Turnaround management & implant reservation tracking
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
+              <button
+                type="button"
+                onClick={() => setViewMode('by_theatre')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                  viewMode === 'by_theatre' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                )}
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span>By Theatre</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('timeline')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer',
+                  viewMode === 'timeline' ? 'bg-white text-teal-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                )}
+              >
+                <Clock className="w-3.5 h-3.5" />
+                <span>Staggered Timeline</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </motion.div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+
+      {/* 3 Active Operating Suites Status Cards */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {mockOTs.map(ot => {
-          const currentSurgery = todaySurgeries.find(s => s.otId === ot.id);
+          const otSurgeries = todaySurgeries.filter(s => s.otId === ot.id);
+          const activeSurgery = otSurgeries.find(s => s.status === 'in_surgery') || otSurgeries[0];
+          const isOccupied = !ot.isAvailable || (activeSurgery && activeSurgery.status === 'in_surgery');
+
           return (
-            <div key={ot.id} className={cn('card p-5', !ot.isAvailable && 'ring-2 ring-amber-300')}>
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-sm font-semibold text-gray-900">{ot.name}</h3>
-                <span className={cn('badge', ot.isAvailable ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700')}>
-                  {ot.isAvailable ? 'Available' : 'In Use'}
+            <div
+              key={ot.id}
+              className={cn(
+                'card p-5 border transition-all',
+                isOccupied ? 'border-amber-300/80 bg-amber-50/20 shadow-xs' : 'border-slate-200 hover:border-slate-300'
+              )}
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900">{ot.name}</h3>
+                  <p className="text-[11px] text-slate-500">
+                    {ot.id === 'ot-1' && 'Major Arthroplasty Suite'}
+                    {ot.id === 'ot-2' && 'Arthroscopy & Sports Suite'}
+                    {ot.id === 'ot-3' && 'Trauma & Spine Reconstruction'}
+                  </p>
+                </div>
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border',
+                    isOccupied
+                      ? 'bg-amber-100 text-amber-800 border-amber-300'
+                      : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                  )}
+                >
+                  <span className={cn('w-1.5 h-1.5 rounded-full', isOccupied ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500')} />
+                  {isOccupied ? 'Case In Progress' : 'Ready / Turnaround'}
                 </span>
               </div>
-              {currentSurgery && !ot.isAvailable && (
-                <div className="bg-amber-50 rounded-lg p-3 mb-3">
-                  <p className="text-xs font-semibold text-amber-800">{currentSurgery.procedure}</p>
-                  <p className="text-[10px] text-amber-600">{currentSurgery.patientName} · {currentSurgery.doctorName}</p>
-                  <p className="text-[10px] text-amber-500 mt-1">{currentSurgery.startTime && formatTime(currentSurgery.startTime)} · {currentSurgery.expectedDuration}min</p>
+
+              {activeSurgery && (
+                <div className="bg-white rounded-xl p-3.5 border border-slate-200/80 shadow-2xs mb-3 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-xs font-bold text-slate-900">{activeSurgery.procedure}</p>
+                      <p className="text-[11px] text-slate-600 font-medium">
+                        {activeSurgery.patientName} · <span className="text-teal-700 font-semibold">{activeSurgery.doctorName}</span>
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded border border-slate-200 shrink-0">
+                      {activeSurgery.startTime} – {activeSurgery.endTime}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-slate-500 pt-1 border-t border-slate-100">
+                    <span>Duration: <strong className="text-slate-700">{activeSurgery.expectedDuration} mins</strong></span>
+                    <span>Anaesthesia: <strong className="text-slate-700">{activeSurgery.anaesthesiaType}</strong></span>
+                  </div>
                 </div>
               )}
-              <div className="space-y-1 text-xs text-gray-400">
-                <p>Equipment: {ot.equipment.join(', ')}</p>
+
+              <div className="space-y-1.5 text-[11px] text-slate-500">
+                <div className="flex items-center justify-between">
+                  <span className="font-medium text-slate-600">Today's Cases:</span>
+                  <span className="font-bold text-slate-800">{otSurgeries.length} scheduled</span>
+                </div>
+                <p className="text-[10px] text-slate-400 truncate">
+                  Equipment: {ot.equipment.join(' · ')}
+                </p>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* Timeline placeholder */}
-      <div className="card p-5">
-        <h3 className="section-title mb-4">Today's Schedule</h3>
-        <div className="space-y-2">
-          {todaySurgeries.map(surg => (
-            <div key={surg.id} className="flex items-center gap-4 py-2 border-b border-surface-100 last:border-0">
-              <div className="w-16 text-center"><p className="text-xs font-bold text-gray-700">{surg.startTime && formatTime(surg.startTime)}</p></div>
-              <div className={cn('w-2 h-8 rounded-full', surg.status === 'in_surgery' ? 'bg-amber-400 animate-pulse' : surg.status === 'discharged' || surg.status === 'recovery' || surg.status === 'follow_up' ? 'bg-emerald-400' : 'bg-blue-400')} />
-              <div className="flex-1"><p className="text-xs font-medium text-gray-900">{surg.procedure}</p><p className="text-[10px] text-gray-400">{surg.patientName} · {surg.otName} · {surg.doctorName}</p></div>
-              <span className="text-[10px] text-gray-400">{surg.expectedDuration}min</span>
-            </div>
-          ))}
+      {/* Today's Schedule Board */}
+      <div className="card p-5 border border-slate-200 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-3 border-b border-slate-100">
+          <div>
+            <h3 className="text-base font-bold text-slate-900">Today's Surgical Schedule & Case Turnover</h3>
+            <p className="text-xs text-slate-500">Chronologically staggered slots per operating theatre suite</p>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-slate-500 font-medium mr-1">Filter OT:</span>
+            {['all', 'ot-1', 'ot-2', 'ot-3'].map(otKey => (
+              <button
+                key={otKey}
+                type="button"
+                onClick={() => setSelectedOtFilter(otKey)}
+                className={cn(
+                  'px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer',
+                  selectedOtFilter === otKey
+                    ? 'bg-teal-600 text-white font-bold shadow-2xs'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                )}
+              >
+                {otKey === 'all' ? 'All Theatres' : otKey.toUpperCase().replace('-', ' ')}
+              </button>
+            ))}
+          </div>
         </div>
+
+        {/* View Mode 1: By Theatre Lanes */}
+        {viewMode === 'by_theatre' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+            {mockOTs
+              .filter(ot => selectedOtFilter === 'all' || ot.id === selectedOtFilter)
+              .map(ot => {
+                const otCases = todaySurgeries.filter(s => s.otId === ot.id);
+                return (
+                  <div key={ot.id} className="bg-slate-50/70 border border-slate-200 rounded-xl p-4 flex flex-col h-full">
+                    <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900">{ot.name}</h4>
+                        <span className="text-[11px] text-teal-700 font-semibold">{otCases.length} Cases Scheduled</span>
+                      </div>
+                      <span className="text-[10px] font-mono font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-slate-200">
+                        {ot.id.toUpperCase()}
+                      </span>
+                    </div>
+
+                    <div className="space-y-3 flex-1">
+                      {otCases.map((surg, idx) => (
+                        <div
+                          key={surg.id}
+                          className={cn(
+                            'p-3.5 rounded-xl border bg-white shadow-2xs transition-all hover:border-teal-300 relative',
+                            surg.status === 'in_surgery' ? 'border-amber-300 ring-1 ring-amber-300/50' : 'border-slate-200'
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2 mb-1.5">
+                            <span className="inline-flex items-center gap-1 text-[11px] font-mono font-bold text-teal-800 bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                              <Clock className="w-3 h-3 text-teal-600" />
+                              {surg.startTime} – {surg.endTime}
+                            </span>
+                            <span
+                              className={cn(
+                                'text-[10px] font-bold px-2 py-0.5 rounded-full border',
+                                surg.status === 'in_surgery' ? 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse' :
+                                surg.status === 'recovery' || surg.status === 'discharged' || surg.status === 'follow_up' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                'bg-sky-50 text-sky-700 border-sky-200'
+                              )}
+                            >
+                              {surg.status === 'in_surgery' ? 'In Surgery' :
+                               surg.status === 'recovery' ? 'In Recovery' :
+                               surg.status === 'discharged' ? 'Completed' : 'Pre-Op Ready'}
+                            </span>
+                          </div>
+
+                          <h5 className="text-xs font-bold text-slate-900 mb-1">{surg.procedure}</h5>
+                          <p className="text-[11px] text-slate-600 mb-2 font-medium">
+                            {surg.patientName} · <span className="text-slate-800 font-semibold">{surg.doctorName}</span>
+                          </p>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] text-slate-500">
+                            <span>Duration: <strong className="text-slate-700">{surg.expectedDuration} mins</strong></span>
+                            <span>Case #{idx + 1}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        )}
+
+        {/* View Mode 2: Master Chronological Staggered Timeline */}
+        {viewMode === 'timeline' && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b border-surface-200 text-xs">
+                  <th className="px-3.5 py-3 font-bold text-slate-700 w-36">Time Slot</th>
+                  <th className="px-3.5 py-3 font-bold text-slate-700 w-28">Theatre</th>
+                  <th className="px-3.5 py-3 font-bold text-slate-700 min-w-[200px]">Procedure & Patient</th>
+                  <th className="px-3.5 py-3 font-bold text-slate-700 w-44">Lead Surgeon</th>
+                  <th className="px-3.5 py-3 font-bold text-slate-700 w-28">Duration</th>
+                  <th className="px-3.5 py-3 font-bold text-slate-700 w-32 text-center">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-surface-100 bg-white text-xs">
+                {filteredSurgeries.map(surg => (
+                  <tr key={surg.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="px-3.5 py-3 align-middle font-mono font-bold text-slate-800">
+                      <div className="inline-flex items-center gap-1.5 bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+                        <Clock className="w-3.5 h-3.5 text-teal-600" />
+                        <span>{surg.startTime} – {surg.endTime}</span>
+                      </div>
+                    </td>
+                    <td className="px-3.5 py-3 align-middle">
+                      <span className={cn(
+                        'inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold border',
+                        surg.otId === 'ot-1' ? 'bg-teal-50 text-teal-800 border-teal-200' :
+                        surg.otId === 'ot-2' ? 'bg-sky-50 text-sky-800 border-sky-200' :
+                        'bg-purple-50 text-purple-800 border-purple-200'
+                      )}>
+                        {surg.otName}
+                      </span>
+                    </td>
+                    <td className="px-3.5 py-3 align-middle">
+                      <p className="font-bold text-slate-900">{surg.procedure}</p>
+                      <p className="text-[11px] text-slate-500 font-medium">{surg.patientName} · {surg.diagnosis}</p>
+                    </td>
+                    <td className="px-3.5 py-3 align-middle font-medium text-slate-800">
+                      {surg.doctorName}
+                    </td>
+                    <td className="px-3.5 py-3 align-middle text-slate-600 font-medium">
+                      {surg.expectedDuration} mins
+                    </td>
+                    <td className="px-3.5 py-3 align-middle text-center">
+                      <span
+                        className={cn(
+                          'inline-flex items-center justify-center px-2.5 py-0.5 rounded-full text-[10px] font-bold border min-w-[85px]',
+                          surg.status === 'in_surgery' ? 'bg-amber-100 text-amber-800 border-amber-300 animate-pulse' :
+                          surg.status === 'recovery' || surg.status === 'discharged' || surg.status === 'follow_up' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                          'bg-sky-50 text-sky-700 border-sky-200'
+                        )}
+                      >
+                        {surg.status === 'in_surgery' ? 'In Surgery' :
+                         surg.status === 'recovery' ? 'In Recovery' :
+                         surg.status === 'discharged' ? 'Completed' : 'Pre-Op Ready'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );

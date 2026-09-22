@@ -523,7 +523,7 @@ export const INITIAL_OP_TRIAGE_RECORDS: OpTriageData[] = [
     rawScanId: 'xr-ankle-07',
     scanThumbnailUrl: '/images/xray-ankle-fracture.svg',
     billingStatus: 'tpa',
-    billingAmount: 'Emergency TPA Cashless Initiated (₹1.8L)',
+    billingAmount: '₹1,80,000 (TPA Pre-Auth)',
     registeredTime: '11:30 AM',
     status: 'Waiting',
     isNewPatient: true, // 🟢 NEW PATIENT

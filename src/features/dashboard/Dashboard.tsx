@@ -269,22 +269,22 @@ export function Dashboard() {
       <motion.div className="page-header" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2.5 mb-1">
-              <h1 className="page-title">
-                {perspective === 'super_admin' && 'Hospital Executive Command Center ("God View")'}
-                {perspective === 'doctor' && "Doctor OPD Clinical Cockpit (Dr. Anand K. Style)"}
-                {perspective === 'surgeon' && "Surgeon OT & Pre-Op Command (Dr. Lakshmi N. Style)"}
-                {perspective === 'nurse' && 'Staff Nurse Ward & Pre-Op Station (Nurse Ramya Style)'}
-                {perspective === 'physiotherapist' && 'Physiotherapy & ROM Rehab Station (Arun PT Style)'}
-                {perspective === 'receptionist' && 'Reception & Unified OPD Queue (Front Desk Style)'}
-                {perspective === 'inventory_manager' && 'Implant Stock & Surgical Auto-Reserve (Ramesh Style)'}
+            <div className="flex items-center gap-2.5 mb-1 flex-wrap">
+              <h1 className="page-title text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                {perspective === 'super_admin' && 'Hospital Executive Command Center'}
+                {perspective === 'doctor' && 'Doctor OPD Clinical Cockpit'}
+                {perspective === 'surgeon' && 'Surgeon OT & Pre-Op Command'}
+                {perspective === 'nurse' && 'Staff Nurse Ward Station'}
+                {perspective === 'physiotherapist' && 'Physiotherapy & ROM Rehab Station'}
+                {perspective === 'receptionist' && 'Reception & Unified OPD Queue'}
+                {perspective === 'inventory_manager' && 'Implant Stock & Surgical Auto-Reserve'}
               </h1>
-              <span className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse-dot" />
+              <span className="inline-flex items-center gap-1.5 text-[11px] text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full font-bold border border-emerald-200/90 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 Live Today
               </span>
             </div>
-            <p className="page-subtitle">
+            <p className="page-subtitle text-xs sm:text-sm text-slate-500">
               {perspective === 'super_admin' && 'Enterprise multi-specialty overview · Hospital-wide KPIs, OT occupancy & revenue'}
               {perspective === 'doctor' && "Today's OPD queue · Patient last-visit summaries · Pending lab/X-ray signoffs · Fast E-Prescriptions"}
               {perspective === 'surgeon' && "Today's scheduled surgeries · Real-time implant stock checks · Pre-op investigation clearances"}
@@ -296,27 +296,34 @@ export function Dashboard() {
           </div>
 
           {/* Quick Perspective Selector Tabs */}
-          <div className="flex items-center p-1 bg-white border border-surface-200 rounded-xl shadow-xs overflow-x-auto max-w-full">
+          <div className="flex items-center p-1 bg-slate-100/90 border border-slate-200/80 rounded-xl shadow-xs overflow-x-auto max-w-full gap-0.5 scrollbar-none">
             {[
-              { id: 'super_admin', label: '👑 God View', icon: Shield },
-              { id: 'doctor', label: '🩺 Doctor OPD', icon: Stethoscope },
-              { id: 'surgeon', label: '🔪 Surgeon OT', icon: Syringe },
-              { id: 'nurse', label: '👩‍⚕️ Staff Nurse', icon: HeartPulse },
-              { id: 'physiotherapist', label: '🏃 Physiotherapist', icon: Dumbbell },
-              { id: 'receptionist', label: '📋 Receptionist', icon: CalendarDays },
-              { id: 'inventory_manager', label: '📦 Inventory & OT', icon: Package },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setPerspective(tab.id as RolePerspective)}
-                className={cn(
-                  'flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all',
-                  perspective === tab.id ? 'bg-primary-600 text-white shadow-2xs' : 'text-gray-600 hover:text-gray-900 hover:bg-surface-100'
-                )}
-              >
-                <span>{tab.label}</span>
-              </button>
-            ))}
+              { id: 'super_admin', label: 'Executive', icon: Shield },
+              { id: 'doctor', label: 'Doctor OPD', icon: Stethoscope },
+              { id: 'surgeon', label: 'Surgeon OT', icon: Syringe },
+              { id: 'nurse', label: 'Ward Nurse', icon: HeartPulse },
+              { id: 'physiotherapist', label: 'Physiotherapist', icon: Dumbbell },
+              { id: 'receptionist', label: 'Receptionist', icon: CalendarDays },
+              { id: 'inventory_manager', label: 'Inventory & OT', icon: Package },
+            ].map(tab => {
+              const Icon = tab.icon;
+              const isActive = perspective === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setPerspective(tab.id as RolePerspective)}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0',
+                    isActive
+                      ? 'bg-teal-600 text-white shadow-2xs font-bold'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-white/80'
+                  )}
+                >
+                  <Icon className={cn('w-3 h-3 shrink-0', isActive ? 'text-white' : 'text-slate-500')} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </motion.div>

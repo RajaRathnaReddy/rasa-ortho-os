@@ -179,10 +179,43 @@ const defaultPreOpChecklist: PreOpItem[] = [
   { id: 'pre-10', label: 'Payment / Insurance Confirmation', status: 'completed', completedBy: 'Finance Dept', completedAt: dt(-1) },
 ];
 
+const otScheduleSlots: Record<number, { start: string; end: string; dur: number }[]> = {
+  1: [
+    { start: '08:00', end: '09:30', dur: 90 },
+    { start: '10:15', end: '13:15', dur: 180 },
+    { start: '14:00', end: '16:00', dur: 120 },
+    { start: '16:30', end: '18:00', dur: 90 },
+    { start: '18:30', end: '20:00', dur: 90 },
+    { start: '20:30', end: '22:00', dur: 90 },
+    { start: '22:30', end: '23:30', dur: 60 },
+  ],
+  2: [
+    { start: '08:30', end: '10:30', dur: 120 },
+    { start: '11:15', end: '12:00', dur: 45 },
+    { start: '12:45', end: '14:45', dur: 120 },
+    { start: '15:15', end: '16:45', dur: 90 },
+    { start: '17:15', end: '18:45', dur: 90 },
+    { start: '19:15', end: '20:30', dur: 75 },
+    { start: '21:00', end: '22:30', dur: 90 },
+  ],
+  3: [
+    { start: '09:00', end: '10:00', dur: 60 },
+    { start: '10:45', end: '12:15', dur: 90 },
+    { start: '13:00', end: '15:00', dur: 120 },
+    { start: '15:30', end: '17:00', dur: 90 },
+    { start: '17:30', end: '19:30', dur: 120 },
+    { start: '20:00', end: '21:30', dur: 90 },
+    { start: '22:00', end: '23:00', dur: 60 },
+  ],
+};
+
 export const mockSurgeries: Surgery[] = Array.from({ length: 20 }, (_, i) => {
   const patient = mockPatients[i % 15]; // use first 15 surgical patients
   const doctor = mockDoctors[i % 8]; // first 8 surgeons
   const dayOffset = i < 3 ? 0 : i < 8 ? Math.floor(Math.random() * 7) + 1 : -(Math.floor(Math.random() * 30) + 1);
+  const otNum = (i % 3) + 1;
+  const slotList = otScheduleSlots[otNum];
+  const slot = slotList[Math.floor(i / 3) % slotList.length];
   return {
     id: `surg-${i + 1}`,
     patientId: patient.id,
@@ -192,11 +225,11 @@ export const mockSurgeries: Surgery[] = Array.from({ length: 20 }, (_, i) => {
     procedure: procedures[i],
     diagnosis: patient.medicalHistory[0] || 'Orthopedic condition requiring surgery',
     date: d(dayOffset),
-    startTime: `${(8 + Math.floor(i / 3)).toString().padStart(2, '0')}:00`,
-    endTime: `${(10 + Math.floor(i / 3)).toString().padStart(2, '0')}:00`,
-    expectedDuration: [90, 120, 60, 180, 45, 90, 120, 90, 120, 30, 60, 90, 120, 90, 120, 150, 90, 180, 60, 120][i],
-    otId: `ot-${(i % 3) + 1}`,
-    otName: `OT ${(i % 3) + 1}`,
+    startTime: slot.start,
+    endTime: slot.end,
+    expectedDuration: slot.dur,
+    otId: `ot-${otNum}`,
+    otName: `OT ${otNum}`,
     anaesthesiaType: i % 3 === 0 ? 'General' : i % 3 === 1 ? 'Spinal' : 'Regional Block',
     anaesthetistName: 'Dr. Ramya Srinivasan',
     status: surgeryStatuses[Math.min(i % surgeryStatuses.length, surgeryStatuses.length - 1)],
