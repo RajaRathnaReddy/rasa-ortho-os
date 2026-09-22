@@ -47,21 +47,103 @@ export const useAuthStore = create<AuthState>((set) => ({
     const cleanUser = username.trim().toLowerCase();
     const cleanPass = pass.trim();
 
-    if (cleanUser === 'rasa' && cleanPass === 'rasatech007') {
+    // Master Administrator Access (Raja Rathna Reddy)
+    if (
+      (cleanUser === 'rasa' ||
+        cleanUser === 'raja' ||
+        cleanUser === 'rajarathnareddy' ||
+        cleanUser === 'admin' ||
+        cleanUser === 'admin@rasaortho.com') &&
+      cleanPass === 'rasatech007'
+    ) {
       if (typeof window !== 'undefined') {
         localStorage.setItem('rasa_ortho_session', 'true');
       }
       set({
-        user: demoUsers[role] || demoUsers.super_admin,
+        user: demoUsers.super_admin,
         isAuthenticated: true,
         currentBranch: BRANCHES[0],
       });
       return { success: true };
     }
 
+    // Clinician & Staff Specific Authorizations
+    if (
+      (cleanUser === 'dr.anand' || cleanUser === 'anand.k@rasaortho.com' || cleanUser === 'anand') &&
+      (cleanPass === 'ortho2026' || cleanPass === 'rasatech007')
+    ) {
+      if (typeof window !== 'undefined') localStorage.setItem('rasa_ortho_session', 'true');
+      set({ user: demoUsers.doctor, isAuthenticated: true, currentBranch: BRANCHES[0] });
+      return { success: true };
+    }
+
+    if (
+      (cleanUser === 'dr.lakshmi' || cleanUser === 'lakshmi.n@rasaortho.com' || cleanUser === 'lakshmi') &&
+      (cleanPass === 'ortho2026' || cleanPass === 'rasatech007')
+    ) {
+      if (typeof window !== 'undefined') localStorage.setItem('rasa_ortho_session', 'true');
+      set({ user: demoUsers.surgeon, isAuthenticated: true, currentBranch: BRANCHES[0] });
+      return { success: true };
+    }
+
+    if (
+      (cleanUser === 'nurse.ramya' || cleanUser === 'ramya@rasaortho.com' || cleanUser === 'ramya') &&
+      (cleanPass === 'ortho2026' || cleanPass === 'rasatech007')
+    ) {
+      if (typeof window !== 'undefined') localStorage.setItem('rasa_ortho_session', 'true');
+      set({ user: demoUsers.nurse, isAuthenticated: true, currentBranch: BRANCHES[0] });
+      return { success: true };
+    }
+
+    if (
+      (cleanUser === 'arun.pt' || cleanUser === 'arun.pt@rasaortho.com' || cleanUser === 'arun') &&
+      (cleanPass === 'ortho2026' || cleanPass === 'rasatech007')
+    ) {
+      if (typeof window !== 'undefined') localStorage.setItem('rasa_ortho_session', 'true');
+      set({ user: demoUsers.physiotherapist, isAuthenticated: true, currentBranch: BRANCHES[0] });
+      return { success: true };
+    }
+
+    if (
+      (cleanUser === 'pradeep' || cleanUser === 'pradeep@rasaortho.com') &&
+      (cleanPass === 'ortho2026' || cleanPass === 'rasatech007')
+    ) {
+      if (typeof window !== 'undefined') localStorage.setItem('rasa_ortho_session', 'true');
+      set({ user: demoUsers.hospital_admin, isAuthenticated: true, currentBranch: BRANCHES[0] });
+      return { success: true };
+    }
+
+    if (
+      (cleanUser === 'priya' || cleanUser === 'priya.rec@rasaortho.com') &&
+      (cleanPass === 'ortho2026' || cleanPass === 'rasatech007')
+    ) {
+      if (typeof window !== 'undefined') localStorage.setItem('rasa_ortho_session', 'true');
+      set({ user: demoUsers.receptionist, isAuthenticated: true, currentBranch: BRANCHES[0] });
+      return { success: true };
+    }
+
+    if (
+      (cleanUser === 'ramesh' || cleanUser === 'ramesh.inv@rasaortho.com') &&
+      (cleanPass === 'ortho2026' || cleanPass === 'rasatech007')
+    ) {
+      if (typeof window !== 'undefined') localStorage.setItem('rasa_ortho_session', 'true');
+      set({ user: demoUsers.inventory_manager, isAuthenticated: true, currentBranch: BRANCHES[0] });
+      return { success: true };
+    }
+
+    if (
+      (cleanUser === 'kiran' || cleanUser === 'kiran@rasaortho.com') &&
+      (cleanPass === 'ortho2026' || cleanPass === 'rasatech007')
+    ) {
+      if (typeof window !== 'undefined') localStorage.setItem('rasa_ortho_session', 'true');
+      set({ user: demoUsers.finance_manager, isAuthenticated: true, currentBranch: BRANCHES[0] });
+      return { success: true };
+    }
+
     return {
       success: false,
-      message: 'Invalid credentials! Please use User ID: Rasa and Password: rasatech007',
+      message:
+        'Access Denied: Invalid Hospital ID or Passcode. Access is strictly restricted to staff authorized by Administrator Raja Rathna Reddy.',
     };
   },
   logout: () => {

@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppLayout } from './components/layout/AppLayout';
+import { LandingPage } from './features/landing/LandingPage';
 import { LoginPage } from './features/auth/LoginPage';
 import { Dashboard } from './features/dashboard/Dashboard';
 import { PatientsPage } from './features/patients/PatientsPage';
@@ -40,6 +41,9 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/overview" element={<LandingPage />} />
+        <Route path="/landing" element={<Navigate to="/overview" replace />} />
+        <Route path="/about" element={<Navigate to="/overview" replace />} />
 
         <Route
           path="/"
