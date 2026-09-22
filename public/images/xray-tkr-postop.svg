@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <radialGradient id="femurGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9"/>
+      <stop offset="70%" stop-color="#cfd8dc" stop-opacity="0.75"/>
+      <stop offset="100%" stop-color="#455a64" stop-opacity="0.3"/>
+    </radialGradient>
+    <linearGradient id="metalProsthesis" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#e0f7fa"/>
+      <stop offset="30%" stop-color="#ffffff"/>
+      <stop offset="70%" stop-color="#b2ebf2"/>
+      <stop offset="100%" stop-color="#80deea"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="#050811"/>
+
+  <!-- Femur Shaft -->
+  <path d="M 330,20 L 330,220 Q 300,260 270,300 L 530,300 Q 500,260 470,220 L 470,20 Z" fill="url(#femurGrad)"/>
+  <text x="375" y="140" fill="#607d8b" font-size="12" font-family="monospace">DISTAL FEMUR</text>
+
+  <!-- Tibia Shaft -->
+  <path d="M 270,380 Q 310,400 330,440 L 330,590 L 470,590 L 470,440 Q 490,400 530,380 Z" fill="url(#femurGrad)"/>
+  <text x="380" y="520" fill="#607d8b" font-size="12" font-family="monospace">PROXIMAL TIBIA</text>
+
+  <!-- Fibula -->
+  <path d="M 220,390 Q 240,430 250,590 L 280,590 Q 270,430 250,380 Z" fill="url(#femurGrad)" opacity="0.6"/>
+
+  <!-- ZIMMER NEXGEN CR FEMORAL PROSTHESIS (Dense Radio-opaque Metal) -->
+  <path d="M 275,260 Q 330,240 400,240 Q 470,240 525,260 L 525,320 Q 470,340 400,340 Q 330,340 275,320 Z" fill="url(#metalProsthesis)" stroke="#ffffff" stroke-width="2"/>
+  <rect x="385" y="210" width="30" height="40" fill="url(#metalProsthesis)"/> <!-- Femoral Peg -->
+
+  <!-- POLYETHYLENE ARTICULAR INSERT (Radiolucent space between metal components) -->
+  <rect x="290" y="325" width="220" height="18" fill="#1c2833" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="3 3"/>
+  <text x="340" y="338" fill="#00e5ff" font-size="10" font-family="monospace">PE SPACER (10mm)</text>
+
+  <!-- TIBIAL METAL TRAY & STEM EXTENSION -->
+  <path d="M 270,345 L 530,345 L 525,365 Q 480,375 415,375 L 415,450 L 385,450 L 385,375 Q 320,375 275,365 Z" fill="url(#metalProsthesis)" stroke="#ffffff" stroke-width="2"/>
+
+  <!-- Radiopaque Bone Cement Mantle -->
+  <path d="M 270,367 Q 400,380 530,367" stroke="#ffffff" stroke-width="3" fill="none" opacity="0.9"/>
+
+  <!-- Mechanical Axis Alignment Verified Line (180° Neutral) -->
+  <line x1="400" y1="20" x2="400" y2="590" stroke="#76ff03" stroke-width="1.5" stroke-dasharray="6 4" opacity="0.8"/>
+  <text x="410" y="80" fill="#76ff03" font-size="11" font-family="monospace">NEUTRAL MECHANICAL AXIS (179.8°)</text>
+
+  <!-- HUD Annotations -->
+  <text x="25" y="35" fill="#26a69a" font-size="12" font-family="monospace" font-weight="bold">SURESH BABU NAIDU (62M)</text>
+  <text x="25" y="52" fill="#80cbc4" font-size="10" font-family="monospace">POST-OP POD 45 CHECK · LT KNEE AP</text>
+  <text x="25" y="68" fill="#80cbc4" font-size="10" font-family="monospace">IMPLANT: ZIMMER NEXGEN CR SZ 4</text>
+
+  <text x="775" y="35" fill="#26a69a" font-size="12" font-family="monospace" font-weight="bold" text-anchor="end">RASA PACS ORTHO</text>
+  <text x="775" y="52" fill="#80cbc4" font-size="10" font-family="monospace" text-anchor="end">ACC: XR-2024-6019 · 78 kVp 16 mAs</text>
+  <text x="775" y="68" fill="#76ff03" font-size="10" font-family="monospace" font-weight="bold" text-anchor="end">ALIGNMENT: PERFECT STABILITY</text>
+
+  <text x="740" y="560" fill="#ffffff" font-size="28" font-family="monospace" font-weight="bold">L</text>
+</svg>

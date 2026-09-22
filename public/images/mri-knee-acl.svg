@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <radialGradient id="femurCondyle" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.85"/>
+      <stop offset="60%" stop-color="#b0bec5" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#263238" stop-opacity="0.3"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="#030712"/>
+
+  <!-- Distal Femoral Condyle (Rounded Sagittal Profile) -->
+  <path d="M 280,40 Q 360,30 440,80 Q 560,180 540,320 Q 500,380 400,370 Q 280,350 250,260 L 250,40 Z" fill="url(#femurCondyle)"/>
+  <text x="340" y="160" fill="#78909c" font-size="12" font-family="monospace">FEMORAL CONDYLE</text>
+
+  <!-- Posterior Cruciate Ligament (PCL - Intact, Dark Black Band) -->
+  <path d="M 390,260 Q 450,330 420,430" stroke="#000000" stroke-width="14" fill="none" stroke-linecap="round"/>
+  <text x="445" y="340" fill="#81c784" font-size="10" font-family="monospace">PCL (INTACT)</text>
+
+  <!-- ANTERIOR CRUCIATE LIGAMENT (ACL - Ruptured, Discontinuous Fibers with Edema) -->
+  <!-- Proximal stump -->
+  <path d="M 440,240 L 400,285" stroke="#37474f" stroke-width="12" fill="none" stroke-linecap="round"/>
+  <!-- Bright Edema Gap in Mid-substance -->
+  <ellipse cx="375" cy="315" rx="24" ry="14" fill="#00e676" opacity="0.85"/>
+  <circle cx="375" cy="315" r="5" fill="#ffffff"/>
+  <text x="210" y="320" fill="#ff5252" font-size="12" font-family="monospace" font-weight="bold">COMPLETE ACL RUPTURE &gt;&gt;</text>
+  <!-- Distal stump -->
+  <path d="M 350,345 L 320,390" stroke="#546e7a" stroke-width="10" fill="none" stroke-linecap="round"/>
+
+  <!-- Tibial Plateau -->
+  <path d="M 220,390 Q 360,380 530,400 L 510,580 L 260,580 Z" fill="url(#femurCondyle)"/>
+  <text x="360" y="470" fill="#78909c" font-size="12" font-family="monospace">TIBIAL PLATEAU</text>
+
+  <!-- Lateral Femoral Notch Bone Bruise / Contusion (High Signal on T2) -->
+  <ellipse cx="460" cy="270" rx="35" ry="25" fill="#80d8ff" opacity="0.35"/>
+  <text x="480" y="250" fill="#40c4ff" font-size="10" font-family="monospace">BONE CONTUSION</text>
+
+  <!-- Patella & Patellar Tendon -->
+  <ellipse cx="190" cy="240" rx="25" ry="40" fill="url(#femurCondyle)"/>
+  <path d="M 185,280 Q 200,340 240,410" stroke="#90a4ae" stroke-width="10" fill="none"/>
+  <text x="110" y="240" fill="#90a4ae" font-size="10" font-family="monospace">PATELLA</text>
+
+  <!-- HUD -->
+  <text x="25" y="35" fill="#26a69a" font-size="12" font-family="monospace" font-weight="bold">DEEPA VENKAT (37F)</text>
+  <text x="25" y="52" fill="#80cbc4" font-size="10" font-family="monospace">ID: PT-2024-00104 · MOD: MR SAG T2 FAT-SAT</text>
+  <text x="25" y="68" fill="#ff5252" font-size="10" font-family="monospace" font-weight="bold">ACUTE ACL MID-SUBSTANCE TEAR (PIVOT SHIFT)</text>
+
+  <text x="775" y="35" fill="#26a69a" font-size="12" font-family="monospace" font-weight="bold" text-anchor="end">RASA SPORTS ORTHO</text>
+  <text x="775" y="52" fill="#80cbc4" font-size="10" font-family="monospace" text-anchor="end">ACC: MR-2024-9104 · RT KNEE</text>
+  <text x="775" y="68" fill="#80cbc4" font-size="10" font-family="monospace" text-anchor="end">LACHMAN POSITIVE</text>
+
+  <text x="740" y="560" fill="#ffffff" font-size="28" font-family="monospace" font-weight="bold">R</text>
+</svg>

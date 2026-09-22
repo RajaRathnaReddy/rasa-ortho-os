@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <radialGradient id="vertGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="70%" stop-color="#cfd8dc" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#37474f" stop-opacity="0.35"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="#040711"/>
+
+  <!-- Cranial Base / Occiput -->
+  <path d="M 280,20 Q 420,20 500,70 L 400,90 Z" fill="url(#vertGrad)" opacity="0.8"/>
+
+  <!-- C1 (Atlas) & C2 (Axis Odontoid) -->
+  <ellipse cx="370" cy="110" rx="35" ry="18" fill="url(#vertGrad)"/>
+  <path d="M 340,135 L 420,135 L 410,180 L 350,180 Z" fill="url(#vertGrad)"/>
+  <text x="435" y="160" fill="#b0bec5" font-size="12" font-family="monospace" font-weight="bold">C2 (Axis)</text>
+
+  <!-- C3 -->
+  <path d="M 330,195 L 415,195 L 410,235 L 335,235 Z" fill="url(#vertGrad)"/>
+  <text x="430" y="220" fill="#b0bec5" font-size="11" font-family="monospace">C3</text>
+
+  <!-- C4 -->
+  <path d="M 320,250 L 405,250 L 400,290 L 325,290 Z" fill="url(#vertGrad)"/>
+  <text x="420" y="275" fill="#b0bec5" font-size="11" font-family="monospace">C4</text>
+
+  <!-- C5 with Spondylotic Osteophytes -->
+  <path d="M 305,305 L 395,305 L 390,345 L 300,345 Z" fill="url(#vertGrad)"/>
+  <text x="410" y="330" fill="#b0bec5" font-size="11" font-family="monospace">C5</text>
+
+  <!-- C5-C6 Disc Space (Marked Disc Narrowing) -->
+  <line x1="300" y1="350" x2="390" y2="350" stroke="#ff1744" stroke-width="3" stroke-dasharray="2 2"/>
+  <text x="130" y="355" fill="#ff5252" font-size="11" font-family="monospace" font-weight="bold">C5-C6 DISC COLLAPSE &gt;&gt;</text>
+
+  <!-- C6 with Anterior & Posterior Osteophytes -->
+  <path d="M 290,358 L 385,358 L 380,400 L 285,400 Z" fill="url(#vertGrad)"/>
+  <!-- Anterior Beaking -->
+  <path d="M 285,358 L 270,365 L 285,375 Z" fill="#ffffff"/>
+  <!-- Posterior Osteophyte encroaching canal -->
+  <path d="M 385,358 L 400,363 L 383,372 Z" fill="#ffeb3b"/>
+  <text x="405" y="385" fill="#b0bec5" font-size="11" font-family="monospace">C6</text>
+
+  <!-- C7 -->
+  <path d="M 280,415 L 375,415 L 370,460 L 275,460 Z" fill="url(#vertGrad)"/>
+  <text x="390" y="440" fill="#b0bec5" font-size="11" font-family="monospace">C7</text>
+
+  <!-- Spinous Processes -->
+  <path d="M 420,150 L 510,180 L 480,200 Z" fill="url(#vertGrad)" opacity="0.7"/>
+  <path d="M 405,270 L 490,310 L 470,325 Z" fill="url(#vertGrad)" opacity="0.7"/>
+  <path d="M 370,440 L 540,510 L 510,530 Z" fill="url(#vertGrad)" opacity="0.8"/> <!-- C7 Prominens -->
+  <text x="550" y="525" fill="#78909c" font-size="10" font-family="monospace">SPINE C7 PROMINENS</text>
+
+  <!-- Lordosis Curvature Line -->
+  <path d="M 375,90 Q 320,280 340,480" stroke="#00e5ff" stroke-width="2" stroke-dasharray="5 3" fill="none" opacity="0.7"/>
+  <text x="210" y="210" fill="#00e5ff" font-size="10" font-family="monospace">LOSS OF CERVICAL LORDOSIS</text>
+
+  <!-- HUD -->
+  <text x="25" y="35" fill="#26a69a" font-size="12" font-family="monospace" font-weight="bold">ANIL KUMAR REDDY (52M)</text>
+  <text x="25" y="52" fill="#80cbc4" font-size="10" font-family="monospace">LATERAL CERVICAL SPINE RADIOGRAPH</text>
+  <text x="25" y="68" fill="#80cbc4" font-size="10" font-family="monospace">DX: CERVICAL SPONDYLOTIC RADICULOPATHY (C6)</text>
+
+  <text x="775" y="35" fill="#26a69a" font-size="12" font-family="monospace" font-weight="bold" text-anchor="end">RASA SPINE INSTITUTE</text>
+  <text x="775" y="52" fill="#80cbc4" font-size="10" font-family="monospace" text-anchor="end">ACC: XR-2024-4421 · 65 kVp 10 mAs</text>
+  <text x="775" y="68" fill="#ffeb3b" font-size="10" font-family="monospace" text-anchor="end">FORAMINAL STENOSIS DETECTED</text>
+
+  <text x="740" y="560" fill="#ffffff" font-size="28" font-family="monospace" font-weight="bold">R</text>
+</svg>

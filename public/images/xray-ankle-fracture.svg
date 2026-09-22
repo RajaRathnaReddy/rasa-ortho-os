@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="100%" height="100%">
+  <defs>
+    <radialGradient id="tibiaGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="70%" stop-color="#b0bec5" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#37474f" stop-opacity="0.4"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="600" fill="#04060f"/>
+
+  <!-- Tibia Shaft -->
+  <path d="M 310,20 L 310,320 L 260,400 L 410,400 L 430,320 L 430,20 Z" fill="url(#tibiaGrad)"/>
+  <text x="345" y="160" fill="#546e7a" font-size="12" font-family="monospace">TIBIA</text>
+
+  <!-- Fibula Shaft -->
+  <path d="M 465,20 L 465,310 L 525,430 L 490,445 L 440,310 L 440,20 Z" fill="url(#tibiaGrad)" opacity="0.85"/>
+  <text x="460" y="160" fill="#546e7a" font-size="11" font-family="monospace">FIBULA</text>
+
+  <!-- FRACTURE 1: Oblique Weber-B Fibula Fracture Line -->
+  <path d="M 450,335 L 515,385" stroke="#ff1744" stroke-width="4" stroke-linecap="round"/>
+  <!-- Fracture displacement gap -->
+  <polygon points="450,335 480,350 475,360 445,342" fill="#000000"/>
+  <text x="535" y="360" fill="#ff5252" font-size="11" font-family="monospace" font-weight="bold">&lt;&lt; OBLIQUE FIBULAR FRACTURE (WEBER B)</text>
+
+  <!-- FRACTURE 2: Medial Malleolus Transverse Fracture Line -->
+  <path d="M 255,395 L 305,395" stroke="#ff1744" stroke-width="3.5" stroke-linecap="round"/>
+  <polygon points="255,392 305,392 305,398 255,398" fill="#000000"/>
+  <text x="80" y="398" fill="#ff5252" font-size="11" font-family="monospace" font-weight="bold">MEDIAL MALLEOLUS FX &gt;&gt;</text>
+
+  <!-- Talus (Ankle Mortise) -->
+  <path d="M 285,415 Q 360,405 470,420 L 485,490 Q 370,510 270,480 Z" fill="url(#tibiaGrad)"/>
+  <text x="360" y="460" fill="#37474f" font-weight="bold" font-size="12" font-family="monospace">TALUS</text>
+
+  <!-- Calcaneus & Foot outline -->
+  <path d="M 270,485 Q 260,580 340,580 L 530,580 Q 560,540 480,490 Z" fill="url(#tibiaGrad)" opacity="0.6"/>
+
+  <!-- Talar Tilt & Medial Clear Space Widening (Instability) -->
+  <line x1="280" y1="405" x2="285" y2="425" stroke="#ffeb3b" stroke-width="2"/>
+  <text x="210" y="435" fill="#ffeb3b" font-size="9" font-family="monospace">WIDENED MORTISE 6.2mm</text>
+
+  <!-- HUD -->
+  <text x="25" y="35" fill="#26a69a" font-size="12" font-family="monospace" font-weight="bold">MOHAMMED FAROOQ (39M)</text>
+  <text x="25" y="52" fill="#80cbc4" font-size="10" font-family="monospace">RIGHT ANKLE AP MORTISE · EMERGENCY TRAUMA</text>
+  <text x="25" y="68" fill="#ff1744" font-size="10" font-family="monospace" font-weight="bold">ACUTE UNSTABLE BIMALLEOLAR FRACTURE (ORIF INDICATED)</text>
+
+  <text x="775" y="35" fill="#26a69a" font-size="12" font-family="monospace" font-weight="bold" text-anchor="end">RASA TRAUMA CENTER</text>
+  <text x="775" y="52" fill="#80cbc4" font-size="10" font-family="monospace" text-anchor="end">ACC: XR-2024-1102 · STAT EMERGENCY</text>
+  <text x="775" y="68" fill="#80cbc4" font-size="10" font-family="monospace" text-anchor="end">OT BOOKING: TRAUMA THEATRE 3</text>
+
+  <text x="740" y="560" fill="#ffffff" font-size="28" font-family="monospace" font-weight="bold">R</text>
+</svg>
