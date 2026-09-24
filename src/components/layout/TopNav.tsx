@@ -217,7 +217,7 @@ export function TopNav() {
               <div className="px-3 py-2.5 border-b border-surface-100 mb-1">
                 <div className="flex items-center gap-1.5">
                   <p className="text-xs font-bold text-gray-900">{user?.name}</p>
-                  {(user?.role === 'super_admin' || user?.email === 'a.rajarathnareddychenni@gmail.com') && (
+                  {(user?.email?.toLowerCase() === 'a.rajarathnareddychenni@gmail.com' || user?.id === 'user-raja-007' || user?.name?.toLowerCase().trim() === 'raja rathna reddy') && (
                     <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200">
                       Owner
                     </span>
@@ -228,7 +228,7 @@ export function TopNav() {
                   {user?.role?.replace('_', ' ')}
                 </span>
               </div>
-              {(user?.role === 'super_admin' || user?.email === 'a.rajarathnareddychenni@gmail.com') && (
+              {(user?.email?.toLowerCase() === 'a.rajarathnareddychenni@gmail.com' || user?.id === 'user-raja-007' || user?.name?.toLowerCase().trim() === 'raja rathna reddy') && (
                 <button
                   onClick={() => {
                     setProfileOpen(false);

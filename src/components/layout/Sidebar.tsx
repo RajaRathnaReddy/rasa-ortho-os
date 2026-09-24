@@ -77,14 +77,15 @@ export function Sidebar() {
   const { user } = useAuthStore();
   const location = useLocation();
 
-  // Strictly check if current logged-in user is Raja Rathna Reddy / Super Admin
-  const isRajaSuperAdmin =
-    user?.role === 'super_admin' ||
-    user?.email === 'a.rajarathnareddychenni@gmail.com';
+  // Strictly check if current logged-in user is Raja Rathna Reddy ONLY
+  const isOnlyRaja =
+    user?.email?.toLowerCase() === 'a.rajarathnareddychenni@gmail.com' ||
+    user?.id === 'user-raja-007' ||
+    user?.name?.toLowerCase().trim() === 'raja rathna reddy';
 
   const computedNavGroups = useMemo(() => {
     return navGroups.map((group) => {
-      if (group.group === 'Administration' && isRajaSuperAdmin) {
+      if (group.group === 'Administration' && isOnlyRaja) {
         return {
           ...group,
           items: [
@@ -101,7 +102,7 @@ export function Sidebar() {
       }
       return group;
     });
-  }, [isRajaSuperAdmin]);
+  }, [isOnlyRaja]);
 
   return (
     <>

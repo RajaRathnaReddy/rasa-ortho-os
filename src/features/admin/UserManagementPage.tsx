@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck, UserPlus, Search, ShieldAlert, Lock,
@@ -34,6 +35,16 @@ export function UserManagementPage() {
     resetDemoUsers,
     user: currentLoggedInUser,
   } = useAuthStore();
+
+  // Strictly protected for Raja Rathna Reddy only
+  const isOnlyRaja =
+    currentLoggedInUser?.email?.toLowerCase() === 'a.rajarathnareddychenni@gmail.com' ||
+    currentLoggedInUser?.id === 'user-raja-007' ||
+    currentLoggedInUser?.name?.toLowerCase().trim() === 'raja rathna reddy';
+
+  if (!isOnlyRaja) {
+    return <Navigate to="/dashboard" replace />;
+  }
 
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');

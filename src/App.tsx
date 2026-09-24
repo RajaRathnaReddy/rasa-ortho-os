@@ -50,11 +50,13 @@ function SuperAdminRoute({ children }: { children: React.ReactNode }) {
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-  const isRajaSuperAdmin =
-    user?.role === 'super_admin' ||
-    user?.email === 'a.rajarathnareddychenni@gmail.com';
+  // Strictly restricted to Raja Rathna Reddy only
+  const isOnlyRaja =
+    user?.email?.toLowerCase() === 'a.rajarathnareddychenni@gmail.com' ||
+    user?.id === 'user-raja-007' ||
+    user?.name?.toLowerCase().trim() === 'raja rathna reddy';
 
-  if (!isRajaSuperAdmin) {
+  if (!isOnlyRaja) {
     return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
