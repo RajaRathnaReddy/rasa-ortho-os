@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -5,18 +6,33 @@ import {
   ClipboardList, Microscope, Syringe, Activity, Bone, HeartPulse,
   Dumbbell, CalendarCheck, MessageSquare, Bot, FileBarChart, TrendingUp,
   IndianRupee, Package, UserCog, Settings, ChevronLeft, ChevronRight, X,
+  ShieldCheck, Crown,
 } from 'lucide-react';
 import { cn } from '../../lib/cn';
 import { useUIStore } from '../../stores/uiStore';
+import { useAuthStore } from '../../stores/authStore';
 
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard, Users, CalendarDays, MonitorSmartphone, Stethoscope,
   ClipboardList, Microscope, Syringe, Activity, Bone, HeartPulse,
   Dumbbell, CalendarCheck, MessageSquare, Bot, FileBarChart, TrendingUp,
-  IndianRupee, Package, UserCog, Settings,
+  IndianRupee, Package, UserCog, Settings, ShieldCheck, Crown,
 };
 
-const navGroups = [
+interface NavItem {
+  key: string;
+  label: string;
+  path: string;
+  icon: string;
+  isExclusive?: boolean;
+}
+
+interface NavGroup {
+  group: string;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
   { group: 'Overview', items: [
     { key: 'dashboard', label: 'Dashboard', path: '/dashboard', icon: 'LayoutDashboard' },
   ]},
@@ -58,7 +74,34 @@ const navGroups = [
 
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar, sidebarMobileOpen, setSidebarMobileOpen } = useUIStore();
+  const { user } = useAuthStore();
   const location = useLocation();
+
+  // Strictly check if current logged-in user is Raja Rathna Reddy / Super Admin
+  const isRajaSuperAdmin =
+    user?.role === 'super_admin' ||
+    user?.email === 'a.rajarathnareddychenni@gmail.com';
+
+  const computedNavGroups = useMemo(() => {
+    return navGroups.map((group) => {
+      if (group.group === 'Administration' && isRajaSuperAdmin) {
+        return {
+          ...group,
+          items: [
+            {
+              key: 'user-access',
+              label: 'User Access Control',
+              path: '/admin/users',
+              icon: 'ShieldCheck',
+              isExclusive: true,
+            },
+            ...group.items,
+          ],
+        };
+      }
+      return group;
+    });
+  }, [isRajaSuperAdmin]);
 
   return (
     <>
@@ -111,7 +154,7 @@ export function Sidebar() {
 
         {/* Navigation */}
         <nav className="flex-1 overflow-y-auto py-3 px-3 space-y-1">
-          {navGroups.map((group) => (
+          {computedNavGroups.map((group) => (
             <div key={group.group} className="mb-1">
               {!sidebarCollapsed && (
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest px-3 pt-3 pb-1.5">
@@ -133,22 +176,43 @@ export function Sidebar() {
                       'flex items-center rounded-lg transition-all duration-150 group relative',
                       sidebarCollapsed ? 'justify-center p-2.5 mx-auto' : 'gap-3 px-3 py-2',
                       isActive
-                        ? 'bg-primary-50 text-primary-700'
-                        : 'text-gray-500 hover:bg-surface-50 hover:text-gray-800'
+                        ? item.isExclusive
+                          ? 'bg-indigo-50 text-indigo-800 font-bold border border-indigo-200/60 shadow-2xs'
+                          : 'bg-primary-50 text-primary-700 font-semibold'
+                        : item.isExclusive
+                          ? 'text-indigo-700 bg-indigo-50/40 hover:bg-indigo-50 hover:text-indigo-900 font-medium'
+                          : 'text-gray-500 hover:bg-surface-50 hover:text-gray-800'
                     )}
                   >
                     {isActive && (
                       <motion.div
                         layoutId="sidebar-indicator"
-                        className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 bg-primary-600 rounded-r-full"
+                        className={cn(
+                          'absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-r-full',
+                          item.isExclusive ? 'bg-indigo-600' : 'bg-primary-600'
+                        )}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                       />
                     )}
                     {Icon && (
-                      <Icon className={cn('w-[18px] h-[18px] shrink-0', isActive ? 'text-primary-600' : 'text-gray-400 group-hover:text-gray-600')} />
+                      <Icon
+                        className={cn(
+                          'w-[18px] h-[18px] shrink-0',
+                          isActive
+                            ? item.isExclusive ? 'text-indigo-600' : 'text-primary-600'
+                            : item.isExclusive ? 'text-indigo-500' : 'text-gray-400 group-hover:text-gray-600'
+                        )}
+                      />
                     )}
                     {!sidebarCollapsed && (
-                      <span className="text-[13px] font-medium whitespace-nowrap">{item.label}</span>
+                      <span className="text-[13px] whitespace-nowrap flex items-center justify-between w-full">
+                        <span>{item.label}</span>
+                        {item.isExclusive && (
+                          <span className="ml-1.5 px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200">
+                            Owner
+                          </span>
+                        )}
+                      </span>
                     )}
                   </NavLink>
                 );

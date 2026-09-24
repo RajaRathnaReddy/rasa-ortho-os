@@ -11,6 +11,7 @@ import { SurgeriesPage } from './features/surgeries/SurgeriesPage';
 import { ImplantsPage } from './features/implants/ImplantsPage';
 import { RecoveryPage } from './features/recovery/RecoveryPage';
 import { FollowUpsPage } from './features/follow-ups/FollowUpsPage';
+import { UserManagementPage } from './features/admin/UserManagementPage';
 import {
   ReceptionPage,
   ConsultationsPage,
@@ -40,6 +41,21 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore();
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+  return <>{children}</>;
+}
+
+function SuperAdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isAuthenticated } = useAuthStore();
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+  const isRajaSuperAdmin =
+    user?.role === 'super_admin' ||
+    user?.email === 'a.rajarathnareddychenni@gmail.com';
+
+  if (!isRajaSuperAdmin) {
+    return <Navigate to="/dashboard" replace />;
   }
   return <>{children}</>;
 }
@@ -85,6 +101,16 @@ export function App() {
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/settings" element={<SettingsPage />} />
+
+          {/* Exclusive Master Administrator Route (Raja Rathna Reddy Only) */}
+          <Route
+            path="/admin/users"
+            element={
+              <SuperAdminRoute>
+                <UserManagementPage />
+              </SuperAdminRoute>
+            }
+          />
         </Route>
 
         <Route path="*" element={<Navigate to="/" replace />} />

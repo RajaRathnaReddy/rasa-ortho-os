@@ -9,7 +9,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const roleOptions: { role: UserRole; label: string; name: string; icon: React.ComponentType<{ className?: string }>; color: string; badge: string }[] = [
-  { role: 'super_admin', label: 'Super Admin', name: 'Admin Rasa', icon: Shield, color: 'text-indigo-600 bg-indigo-50', badge: 'Full Access' },
+  { role: 'super_admin', label: 'Super Admin', name: 'Raja Rathna Reddy', icon: Shield, color: 'text-indigo-600 bg-indigo-50', badge: 'Platform Owner' },
   { role: 'doctor', label: 'Doctor OPD', name: 'Dr. Anand K.', icon: Stethoscope, color: 'text-teal-600 bg-teal-50', badge: 'Joint Specialist' },
   { role: 'surgeon', label: 'Surgeon OT', name: 'Dr. Lakshmi N.', icon: Syringe, color: 'text-purple-600 bg-purple-50', badge: 'Spine & OT Lead' },
   { role: 'nurse', label: 'Staff Nurse', name: 'Nurse Ramya', icon: HeartPulse, color: 'text-pink-600 bg-pink-50', badge: 'Ward & Pre-Op' },
@@ -215,12 +215,31 @@ export function TopNav() {
           {profileOpen && (
             <div className="absolute right-0 top-full mt-1.5 w-60 bg-white rounded-xl border border-surface-200 shadow-xl animate-scale-in p-1 z-50">
               <div className="px-3 py-2.5 border-b border-surface-100 mb-1">
-                <p className="text-xs font-bold text-gray-900">{user?.name}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-bold text-gray-900">{user?.name}</p>
+                  {(user?.role === 'super_admin' || user?.email === 'a.rajarathnareddychenni@gmail.com') && (
+                    <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase tracking-wider bg-amber-100 text-amber-800 border border-amber-200">
+                      Owner
+                    </span>
+                  )}
+                </div>
                 <p className="text-[11px] text-gray-400 truncate">{user?.email}</p>
                 <span className="inline-block mt-1 text-[10px] font-medium text-primary-700 bg-primary-50 px-2 py-0.5 rounded-full capitalize">
                   {user?.role?.replace('_', ' ')}
                 </span>
               </div>
+              {(user?.role === 'super_admin' || user?.email === 'a.rajarathnareddychenni@gmail.com') && (
+                <button
+                  onClick={() => {
+                    setProfileOpen(false);
+                    navigate('/admin/users');
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-indigo-50 text-indigo-700 flex items-center gap-2 font-medium"
+                >
+                  <Shield className="w-4 h-4 text-indigo-600" />
+                  User Access Control
+                </button>
+              )}
               <button
                 onClick={() => { logout(); setProfileOpen(false); navigate('/'); }}
                 className="w-full text-left px-3 py-2 rounded-lg text-xs hover:bg-red-50 text-red-600 flex items-center gap-2 font-medium"
