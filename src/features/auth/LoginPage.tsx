@@ -24,19 +24,19 @@ export function LoginPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
 
     if (!username.trim() || !password.trim()) {
-      setErrorMessage('Please enter both your Hospital User ID and Security Passcode.');
+      setErrorMessage('Please enter both your Hospital User ID / Email and Security Passcode.');
       return;
     }
 
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const result = validateAndLogin(username, password);
+    try {
+      const result = await validateAndLogin(username, password);
       if (result.success) {
         navigate('/dashboard');
       } else {
@@ -46,7 +46,10 @@ export function LoginPage() {
         );
         setIsSubmitting(false);
       }
-    }, 450);
+    } catch (err: any) {
+      setErrorMessage('Authentication error. Please verify your credentials or network connection.');
+      setIsSubmitting(false);
+    }
   };
 
   return (

@@ -1,13 +1,15 @@
 import { create } from 'zustand';
 import type { User, UserRole, Branch } from '../types';
 import { BRANCHES } from '../lib/constants';
+import { auth, isFirebaseConfigured } from '../lib/firebase';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 
 interface AuthState {
   user: User | null;
   currentBranch: Branch;
   isAuthenticated: boolean;
   login: (role?: UserRole) => void;
-  validateAndLogin: (username: string, pass: string, role?: UserRole) => { success: boolean; message?: string };
+  validateAndLogin: (username: string, pass: string, role?: UserRole) => Promise<{ success: boolean; message?: string }> | { success: boolean; message?: string };
   logout: () => void;
   setBranch: (branchId: string) => void;
 }
@@ -43,9 +45,43 @@ export const useAuthStore = create<AuthState>((set) => ({
       currentBranch: BRANCHES[0],
     });
   },
-  validateAndLogin: (username: string, pass: string, role: UserRole = 'super_admin') => {
+  validateAndLogin: async (username: string, pass: string, role: UserRole = 'super_admin') => {
     const cleanUser = username.trim().toLowerCase();
     const cleanPass = pass.trim();
+
+    // 1. If Firebase is active and user provided an email, attempt Firebase Authentication first
+    if (isFirebaseConfigured && auth && cleanUser.includes('@')) {
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, cleanUser, cleanPass);
+        const fbUser = userCredential.user;
+
+        const authenticatedUser: User = {
+          id: fbUser.uid,
+          name: fbUser.displayName || fbUser.email?.split('@')[0] || 'Hospital Staff',
+          email: fbUser.email || cleanUser,
+          phone: fbUser.phoneNumber || '+919845000000',
+          role: cleanUser.includes('admin') ? 'super_admin' : cleanUser.includes('anand') ? 'doctor' : cleanUser.includes('surgeon') ? 'surgeon' : 'doctor',
+          branchIds: ['branch-1'],
+          isActive: true,
+          createdAt: fbUser.metadata.creationTime || '',
+          updatedAt: fbUser.metadata.lastSignInTime || '',
+        };
+
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('rasa_ortho_session', 'true');
+        }
+
+        set({
+          user: authenticatedUser,
+          isAuthenticated: true,
+          currentBranch: BRANCHES[0],
+        });
+
+        return { success: true };
+      } catch (err: any) {
+        console.warn('Firebase auth attempt failed, checking local credentials fallback:', err?.message);
+      }
+    }
 
     // Master Administrator Access (Raja Rathna Reddy)
     if (
@@ -147,6 +183,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     };
   },
   logout: () => {
+    if (isFirebaseConfigured && auth) {
+      signOut(auth).catch((e) => console.warn('Firebase signout error:', e));
+    }
     if (typeof window !== 'undefined') {
       localStorage.removeItem('rasa_ortho_session');
     }
