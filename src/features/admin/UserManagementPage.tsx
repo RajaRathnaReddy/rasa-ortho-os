@@ -60,7 +60,7 @@ export function UserManagementPage() {
     phone: '',
     role: 'doctor' as UserRole,
     branchName: 'Koramangala',
-    passcode: 'ortho2026',
+    passcode: 'RasaTech007',
   });
 
   const handleCreateUser = (e: React.FormEvent) => {
@@ -76,7 +76,7 @@ export function UserManagementPage() {
       phone: formData.phone || '+91 98450 00000',
       role: formData.role,
       branchName: formData.branchName,
-      passcode: formData.passcode || 'ortho2026',
+      passcode: formData.passcode || 'RasaTech007',
     });
 
     if (result.success) {
@@ -88,7 +88,7 @@ export function UserManagementPage() {
         phone: '',
         role: 'doctor',
         branchName: 'Koramangala',
-        passcode: 'ortho2026',
+        passcode: 'RasaTech007',
       });
     } else {
       showToast(result.message || 'Failed to create user.', 'error');
@@ -677,11 +677,11 @@ export function UserManagementPage() {
                     required
                     value={formData.passcode}
                     onChange={(e) => setFormData({ ...formData, passcode: e.target.value })}
-                    placeholder="e.g. ortho2026 or custom passcode"
+                    placeholder="RasaTech007"
                     className="w-full text-xs px-3.5 py-2.5 rounded-xl border border-surface-200 focus:outline-none focus:border-indigo-500 font-mono"
                   />
                   <p className="text-[10px] text-gray-400 mt-1">
-                    Staff member will use this passcode alongside their email to log in.
+                    Initial default password is <strong>RasaTech007</strong> for all newly provisioned accounts.
                   </p>
                 </div>
 
