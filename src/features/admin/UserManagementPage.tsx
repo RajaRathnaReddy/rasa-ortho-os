@@ -424,7 +424,13 @@ export function UserManagementPage() {
                               )}
                             </div>
                             <p className="text-[11px] text-gray-400 font-mono truncate">{user.email}</p>
-                            <p className="text-[10px] text-gray-400">{user.phone}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="inline-flex items-center gap-1 font-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-100 text-slate-700 border border-surface-200" title="User Login ID">
+                                <span className="text-gray-400 font-sans font-semibold">User ID:</span>
+                                <strong className="text-indigo-600">{user.id}</strong>
+                              </span>
+                              <span className="text-[10px] text-gray-400">{user.phone}</span>
+                            </div>
                           </div>
                         </div>
                       </td>

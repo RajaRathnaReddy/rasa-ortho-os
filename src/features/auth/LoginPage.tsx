@@ -145,7 +145,7 @@ export function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
-                Hospital Staff ID / Email
+                User Name / Hospital Staff ID / Email
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
@@ -155,7 +155,7 @@ export function LoginPage() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your authorized Hospital ID"
+                  placeholder="e.g. Raja Rathna Reddy, user-raja-007, or email"
                   required
                   autoFocus
                   autoComplete="username"

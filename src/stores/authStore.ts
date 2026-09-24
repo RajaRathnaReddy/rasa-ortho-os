@@ -26,7 +26,7 @@ export const INITIAL_MANAGED_USERS: ManagedUser[] = [
     phone: '+91 98450 00001',
     role: 'super_admin',
     branchName: 'All Branches (HQ)',
-    passcode: 'RajaTech007',
+    passcode: 'Raja@970450',
     isBlocked: false,
     isOwner: true,
     isFirebaseSynced: true,
@@ -149,12 +149,18 @@ const loadManagedUsers = (): ManagedUser[] => {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Ensure Raja is always in the list
-          const hasRaja = parsed.some((u: ManagedUser) => u.email === 'a.rajarathnareddychenni@gmail.com');
+          // Ensure Raja's latest passcode is synchronized
+          const updated = parsed.map((u: ManagedUser) => {
+            if (u.email === 'a.rajarathnareddychenni@gmail.com') {
+              return { ...u, passcode: 'Raja@970450' };
+            }
+            return u;
+          });
+          const hasRaja = updated.some((u: ManagedUser) => u.email === 'a.rajarathnareddychenni@gmail.com');
           if (!hasRaja) {
-            return [INITIAL_MANAGED_USERS[0], ...parsed];
+            return [INITIAL_MANAGED_USERS[0], ...updated];
           }
-          return parsed;
+          return updated;
         }
       } catch (e) {
         console.warn('Failed to parse managed users from localStorage:', e);
@@ -308,15 +314,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     // 2. Master Platform Administrator Access (Raja Rathna Reddy)
+    const isRajaIdentifier =
+      cleanUser === 'a.rajarathnareddychenni@gmail.com' ||
+      cleanUser === 'raja rathna reddy' ||
+      cleanUser.replace(/[^a-z0-9]/g, '') === 'rajarathnareddy' ||
+      cleanUser === 'user-raja-007' ||
+      cleanUser === 'raja-007' ||
+      cleanUser === 'raja' ||
+      cleanUser === 'rajarathna' ||
+      cleanUser === 'rasa' ||
+      cleanUser === 'admin' ||
+      cleanUser === 'admin@rasaortho.com';
+
     if (
-      (cleanUser === 'a.rajarathnareddychenni@gmail.com' ||
-        cleanUser === 'raja' ||
-        cleanUser === 'rajarathna' ||
-        cleanUser === 'rajarathnareddy' ||
-        cleanUser === 'rasa' ||
-        cleanUser === 'admin' ||
-        cleanUser === 'admin@rasaortho.com') &&
-      (cleanPassLower === 'rajatech007' || cleanPassLower === 'rasatech007')
+      isRajaIdentifier &&
+      (cleanPass === 'Raja@970450' ||
+        cleanPassLower === 'raja@970450' ||
+        cleanPassLower === 'rajatech007' ||
+        cleanPassLower === 'rasatech007')
     ) {
       const rajaUser: User = {
         id: 'user-raja-007',
@@ -342,77 +357,68 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       return { success: true };
     }
 
-    // 3. Custom Dynamically Managed Users (Created through User Access Control tab)
-    const customUser = currentUsers.find(
+    // 3. User Name, User ID & Email Directory Login (Supports all managed users)
+    const userMatched = currentUsers.find(
       (u) =>
-        (u.email.toLowerCase() === cleanUser || u.name.toLowerCase() === cleanUser) &&
-        (u.passcode === cleanPass || cleanPassLower === 'ortho2026' || cleanPassLower === 'rajatech007')
+        u.name.toLowerCase() === cleanUser ||
+        u.name.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanUser.replace(/[^a-z0-9]/g, '') ||
+        u.name.toLowerCase().includes(cleanUser) ||
+        u.id.toLowerCase() === cleanUser ||
+        u.id.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanUser.replace(/[^a-z0-9]/g, '') ||
+        u.email.toLowerCase() === cleanUser ||
+        (cleanUser === 'dr.anand' && u.id === 'user-doc-1') ||
+        (cleanUser === 'anand' && u.id === 'user-doc-1') ||
+        (cleanUser === 'dr.lakshmi' && u.id === 'user-doc-7') ||
+        (cleanUser === 'lakshmi' && u.id === 'user-doc-7') ||
+        (cleanUser === 'nurse.ramya' && u.id === 'user-nurse-1') ||
+        (cleanUser === 'ramya' && u.id === 'user-nurse-1') ||
+        (cleanUser === 'arun.pt' && u.id === 'user-pt-1') ||
+        (cleanUser === 'arun' && u.id === 'user-pt-1') ||
+        (cleanUser === 'pradeep' && u.id === 'user-ha-1') ||
+        (cleanUser === 'priya' && u.id === 'user-rec-1') ||
+        (cleanUser === 'priya.rec' && u.id === 'user-rec-1') ||
+        (cleanUser === 'ramesh' && u.id === 'user-inv-1') ||
+        (cleanUser === 'kiran' && u.id === 'user-fin-1')
     );
 
-    if (customUser) {
-      if (customUser.isBlocked) {
-        return {
-          success: false,
-          message: `Access Suspended: Account for ${customUser.name} (${customUser.email}) has been blocked by Administrator Raja Rathna Reddy.`,
-        };
-      }
+    if (userMatched) {
+      const passMatches =
+        userMatched.passcode === cleanPass ||
+        userMatched.passcode.toLowerCase() === cleanPassLower ||
+        cleanPassLower === 'ortho2026' ||
+        (userMatched.isOwner && (cleanPass === 'Raja@970450' || cleanPassLower === 'raja@970450' || cleanPassLower === 'rajatech007'));
 
-      const authenticatedCustomUser: User = {
-        id: customUser.id,
-        name: customUser.name,
-        email: customUser.email,
-        phone: customUser.phone,
-        role: customUser.role,
-        branchIds: ['branch-1'],
-        isActive: true,
-        createdAt: customUser.createdAt,
-        updatedAt: new Date().toISOString(),
-      };
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('rasa_ortho_session', 'true');
-        localStorage.setItem('rasa_active_user', JSON.stringify(authenticatedCustomUser));
-      }
-
-      set({
-        user: authenticatedCustomUser,
-        isAuthenticated: true,
-        currentBranch: BRANCHES[0],
-      });
-
-      return { success: true };
-    }
-
-    // 4. Default Clinician & Staff Specific Authorizations
-    const staffMatches = [
-      { keys: ['dr.anand', 'anand.k@rasaortho.com', 'anand'], user: demoUsers.doctor },
-      { keys: ['dr.lakshmi', 'lakshmi.n@rasaortho.com', 'lakshmi'], user: demoUsers.surgeon },
-      { keys: ['nurse.ramya', 'ramya@rasaortho.com', 'ramya'], user: demoUsers.nurse },
-      { keys: ['arun.pt', 'arun.pt@rasaortho.com', 'arun'], user: demoUsers.physiotherapist },
-      { keys: ['pradeep', 'pradeep@rasaortho.com'], user: demoUsers.hospital_admin },
-      { keys: ['priya', 'priya.rec@rasaortho.com'], user: demoUsers.receptionist },
-      { keys: ['ramesh', 'ramesh.inv@rasaortho.com'], user: demoUsers.inventory_manager },
-      { keys: ['kiran', 'kiran@rasaortho.com'], user: demoUsers.finance_manager },
-    ];
-
-    for (const match of staffMatches) {
-      if (match.keys.includes(cleanUser) && (cleanPassLower === 'ortho2026' || cleanPassLower === 'rajatech007' || cleanPassLower === 'rasatech007')) {
-        // Double check if this demo user is marked as blocked
-        const isBlocked = currentUsers.some(
-          (u) => (u.email.toLowerCase() === match.user.email.toLowerCase() || match.keys.includes(u.name.toLowerCase())) && u.isBlocked
-        );
-        if (isBlocked) {
+      if (passMatches) {
+        if (userMatched.isBlocked) {
           return {
             success: false,
-            message: `Access Suspended: Account for ${match.user.name} (${match.user.email}) has been blocked by Administrator Raja Rathna Reddy.`,
+            message: `Access Suspended: Account for ${userMatched.name} (${userMatched.id}) has been blocked by Administrator Raja Rathna Reddy.`,
           };
         }
 
+        const authenticatedUser: User = {
+          id: userMatched.id,
+          name: userMatched.name,
+          email: userMatched.email,
+          phone: userMatched.phone,
+          role: userMatched.role,
+          branchIds: ['branch-1'],
+          isActive: true,
+          createdAt: userMatched.createdAt,
+          updatedAt: new Date().toISOString(),
+        };
+
         if (typeof window !== 'undefined') {
           localStorage.setItem('rasa_ortho_session', 'true');
-          localStorage.setItem('rasa_active_user', JSON.stringify(match.user));
+          localStorage.setItem('rasa_active_user', JSON.stringify(authenticatedUser));
         }
-        set({ user: match.user, isAuthenticated: true, currentBranch: BRANCHES[0] });
+
+        set({
+          user: authenticatedUser,
+          isAuthenticated: true,
+          currentBranch: BRANCHES[0],
+        });
+
         return { success: true };
       }
     }
@@ -420,7 +426,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     return {
       success: false,
       message:
-        'Access Denied: Invalid Hospital ID or Passcode. Access is strictly restricted to staff authorized by Administrator Raja Rathna Reddy.',
+        'Access Denied: Invalid Hospital User ID or Passcode. Access is strictly restricted to staff authorized by Administrator Raja Rathna Reddy.',
     };
   },
 
@@ -443,18 +449,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   // Master Admin User Management Implementations
   addUser: (newUser) => {
     const currentUsers = get().managedUsers;
-    const exists = currentUsers.some(
-      (u) => u.email.toLowerCase() === newUser.email.trim().toLowerCase()
-    );
+    const cleanEmail = newUser.email.trim().toLowerCase();
+    const cleanId = (newUser as any).id?.trim()?.toLowerCase() || `staff-${Date.now().toString(36).slice(-4)}-${Math.random().toString(36).substring(2, 5)}`;
 
-    if (exists) {
+    const emailExists = currentUsers.some(
+      (u) => u.email.toLowerCase() === cleanEmail
+    );
+    if (emailExists) {
       return { success: false, message: `A user with email "${newUser.email}" already exists.` };
     }
 
+    const idExists = currentUsers.some(
+      (u) => u.id.toLowerCase() === cleanId
+    );
+    if (idExists) {
+      return { success: false, message: `A user with User ID "${cleanId}" already exists. Please choose a unique ID.` };
+    }
+
     const created: ManagedUser = {
-      id: `usr-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`,
+      id: cleanId,
       name: newUser.name.trim(),
-      email: newUser.email.trim().toLowerCase(),
+      email: cleanEmail,
       phone: newUser.phone.trim() || '+91 98450 00000',
       role: newUser.role,
       branchName: newUser.branchName || 'Koramangala',
@@ -468,7 +483,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     saveManagedUsers(updatedList);
     set({ managedUsers: updatedList });
 
-    return { success: true, message: `User "${created.name}" created successfully.` };
+    return { success: true, message: `User "${created.name}" created with User ID "${created.id}".` };
   },
 
   toggleBlockUser: (userId: string) => {
