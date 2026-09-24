@@ -33,6 +33,17 @@ export const INITIAL_MANAGED_USERS: ManagedUser[] = [
     createdAt: '2026-01-01T00:00:00Z',
   },
   {
+    id: 'staff-uzbh-2to',
+    name: 'Harinath Reddy',
+    email: 'hari@rasaortho.com',
+    phone: '+91 98450 00000',
+    role: 'super_admin',
+    branchName: 'All Branches (HQ)',
+    passcode: 'RasaTech007',
+    isBlocked: false,
+    createdAt: '2026-09-24T11:40:00Z',
+  },
+  {
     id: 'user-doc-1',
     name: 'Dr. Anand Krishnamurthy',
     email: 'anand.k@rasaortho.com',
@@ -156,10 +167,20 @@ const loadManagedUsers = (): ManagedUser[] => {
             }
             return u;
           });
-          const hasRaja = updated.some((u: ManagedUser) => u.email === 'a.rajarathnareddychenni@gmail.com');
-          if (!hasRaja) {
-            return [INITIAL_MANAGED_USERS[0], ...updated];
-          }
+
+          // Ensure all initial users (Raja, Harinath, Dr Anand, etc.) are present
+          INITIAL_MANAGED_USERS.forEach((initUser) => {
+            const exists = updated.some(
+              (u: ManagedUser) =>
+                u.email.toLowerCase() === initUser.email.toLowerCase() ||
+                u.id.toLowerCase() === initUser.id.toLowerCase() ||
+                u.name.toLowerCase().replace(/[^a-z0-9]/g, '') === initUser.name.toLowerCase().replace(/[^a-z0-9]/g, '')
+            );
+            if (!exists) {
+              updated.push(initUser);
+            }
+          });
+
           return updated;
         }
       } catch (e) {
@@ -252,20 +273,30 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   validateAndLogin: async (username: string, pass: string, _role: UserRole = 'super_admin') => {
-    const cleanUser = username.trim().toLowerCase();
+    // Normalize user input: collapse multiple spaces into single space, remove special characters for fuzzy matching
+    const rawUser = username.trim();
+    const cleanUser = rawUser.toLowerCase().replace(/\s+/g, ' ');
+    const cleanUserNoSpaces = rawUser.toLowerCase().replace(/[^a-z0-9]/g, '');
     const cleanPass = pass.trim();
     const cleanPassLower = cleanPass.toLowerCase();
 
-    const currentUsers = get().managedUsers;
+    // ALWAYS load the freshest user database from storage
+    const currentUsers = loadManagedUsers();
 
     // 0. Check if this account is blocked in the managed directory
-    const targetedUser = currentUsers.find(
-      (u) =>
-        u.email.toLowerCase() === cleanUser ||
-        u.id.toLowerCase() === cleanUser ||
-        u.name.toLowerCase() === cleanUser ||
-        (!cleanUser.includes('@') && u.name.toLowerCase().includes(cleanUser))
-    );
+    const targetedUser = currentUsers.find((u) => {
+      const uName = u.name.trim().toLowerCase().replace(/\s+/g, ' ');
+      const uNameNoSpaces = u.name.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const uId = u.id.trim().toLowerCase();
+      const uEmail = u.email.trim().toLowerCase();
+
+      return (
+        uEmail === cleanUser ||
+        uId === cleanUser ||
+        uName === cleanUser ||
+        uNameNoSpaces === cleanUserNoSpaces
+      );
+    });
 
     if (targetedUser && targetedUser.isBlocked) {
       return {
@@ -317,7 +348,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     const isRajaIdentifier =
       cleanUser === 'a.rajarathnareddychenni@gmail.com' ||
       cleanUser === 'raja rathna reddy' ||
-      cleanUser.replace(/[^a-z0-9]/g, '') === 'rajarathnareddy' ||
+      cleanUserNoSpaces === 'rajarathnareddy' ||
       cleanUser === 'user-raja-007' ||
       cleanUser === 'raja-007' ||
       cleanUser === 'raja' ||
@@ -358,14 +389,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     }
 
     // 3. User Name, User ID & Email Directory Login (Supports all managed users)
-    const userMatched = currentUsers.find(
-      (u) =>
-        u.name.toLowerCase() === cleanUser ||
-        u.name.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanUser.replace(/[^a-z0-9]/g, '') ||
-        u.name.toLowerCase().includes(cleanUser) ||
-        u.id.toLowerCase() === cleanUser ||
-        u.id.toLowerCase().replace(/[^a-z0-9]/g, '') === cleanUser.replace(/[^a-z0-9]/g, '') ||
-        u.email.toLowerCase() === cleanUser ||
+    const userMatched = currentUsers.find((u) => {
+      const uName = u.name.trim().toLowerCase().replace(/\s+/g, ' ');
+      const uNameNoSpaces = u.name.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const uId = u.id.trim().toLowerCase();
+      const uIdNoSpaces = u.id.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      const uEmail = u.email.trim().toLowerCase();
+
+      return (
+        uName === cleanUser ||
+        uNameNoSpaces === cleanUserNoSpaces ||
+        uId === cleanUser ||
+        uIdNoSpaces === cleanUserNoSpaces ||
+        uEmail === cleanUser ||
+        uName.includes(cleanUser) ||
+        cleanUser.includes(uName) ||
         (cleanUser === 'dr.anand' && u.id === 'user-doc-1') ||
         (cleanUser === 'anand' && u.id === 'user-doc-1') ||
         (cleanUser === 'dr.lakshmi' && u.id === 'user-doc-7') ||
@@ -378,13 +416,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         (cleanUser === 'priya' && u.id === 'user-rec-1') ||
         (cleanUser === 'priya.rec' && u.id === 'user-rec-1') ||
         (cleanUser === 'ramesh' && u.id === 'user-inv-1') ||
-        (cleanUser === 'kiran' && u.id === 'user-fin-1')
-    );
+        (cleanUser === 'kiran' && u.id === 'user-fin-1') ||
+        (cleanUser === 'harinath' && u.name.toLowerCase().includes('harinath')) ||
+        (cleanUser === 'hari' && u.name.toLowerCase().includes('harinath'))
+      );
+    });
 
     if (userMatched) {
       const passMatches =
         userMatched.passcode === cleanPass ||
         userMatched.passcode.toLowerCase() === cleanPassLower ||
+        cleanPass === 'RasaTech007' ||
         cleanPassLower === 'rasatech007' ||
         cleanPassLower === 'ortho2026' ||
         (userMatched.isOwner && (cleanPass === 'Raja@970450' || cleanPassLower === 'raja@970450' || cleanPassLower === 'rajatech007'));
